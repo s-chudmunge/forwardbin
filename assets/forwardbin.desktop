@@ -1,0 +1,11 @@
+[Desktop Entry]
+Name=ForwardBin Jarvis
+GenericName=Smart Content Drop Bin
+Comment=AI-powered desktop drop bin & calendar scheduler for videos, papers, and links
+Exec=forwardbin ui
+Icon=forwardbin
+Terminal=false
+Type=Application
+Categories=Utility;Office;Productivity;AudioVideo;
+Keywords=jarvis;schedule;calendar;bin;drop;ai;video;
+StartupNotify=true

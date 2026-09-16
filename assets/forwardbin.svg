@@ -1,0 +1,44 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 128 128" width="128" height="128">
+  <defs>
+    <linearGradient id="bgGrad" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#0b0f19" />
+      <stop offset="100%" stop-color="#161f30" />
+    </linearGradient>
+    <linearGradient id="blueGlow" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#00d2ff" />
+      <stop offset="100%" stop-color="#0070f3" />
+    </linearGradient>
+    <linearGradient id="cyanArc" x1="0%" y1="0%" x2="100%" y2="0%">
+      <stop offset="0%" stop-color="#00ffff" stop-opacity="0.9"/>
+      <stop offset="100%" stop-color="#0077ff" stop-opacity="0.1"/>
+    </linearGradient>
+    <filter id="glow" x="-20%" y="-20%" width="140%" height="140%">
+      <feGaussianBlur stdDeviation="3" result="blur" />
+      <feComposite in="SourceGraphic" in2="blur" operator="over" />
+    </filter>
+  </defs>
+
+  <!-- Background rounded squircle -->
+  <rect x="8" y="8" width="112" height="112" rx="28" fill="url(#bgGrad)" stroke="#1e293b" stroke-width="2"/>
+
+  <!-- Outer HUD Ring -->
+  <circle cx="64" cy="64" r="46" fill="none" stroke="#00f2fe" stroke-width="1.5" stroke-dasharray="8 6" stroke-opacity="0.4"/>
+  <circle cx="64" cy="64" r="40" fill="none" stroke="url(#blueGlow)" stroke-width="2.5" stroke-opacity="0.8"/>
+
+  <!-- Rotating Arc segments -->
+  <path d="M 32 64 A 32 32 0 0 1 64 32" fill="none" stroke="#00ffff" stroke-width="3" stroke-linecap="round" filter="url(#glow)"/>
+  <path d="M 96 64 A 32 32 0 0 1 64 96" fill="none" stroke="#0070f3" stroke-width="3" stroke-linecap="round"/>
+
+  <!-- Hexagonal Core / Funnel -->
+  <polygon points="64,44 81,54 81,74 64,84 47,74 47,54" fill="#0f172a" stroke="#00d2ff" stroke-width="2" filter="url(#glow)"/>
+
+  <!-- Central Arc / Vortex Energy Core -->
+  <circle cx="64" cy="64" r="8" fill="#00f2fe" filter="url(#glow)"/>
+  <circle cx="64" cy="64" r="4" fill="#ffffff"/>
+
+  <!-- Subtle tick marks -->
+  <line x1="64" y1="18" x2="64" y2="24" stroke="#00d2ff" stroke-width="2"/>
+  <line x1="64" y1="104" x2="64" y2="110" stroke="#00d2ff" stroke-width="2"/>
+  <line x1="18" y1="64" x2="24" y2="64" stroke="#00d2ff" stroke-width="2"/>
+  <line x1="104" y1="64" x2="110" y2="64" stroke="#00d2ff" stroke-width="2"/>
+</svg>

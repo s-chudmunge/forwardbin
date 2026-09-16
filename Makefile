@@ -13,6 +13,10 @@ install: build
 	@echo "🚀 Installing ForwardBin..."
 	@./install.sh
 
+uninstall:
+	@echo "🛑 Uninstalling ForwardBin..."
+	@./uninstall.sh
+
 restart:
 	@echo "🔄 Restarting ForwardBin services..."
 	@systemctl --user restart forwardbin-ui.service forwardbin-daemon.service

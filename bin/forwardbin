@@ -1,28 +1,43 @@
 #!/usr/bin/env bash
-# ForwardBin Hybrid Launcher (Rust Core + GTK3/Cairo Animated UI)
+# ==============================================================================
+# ForwardBin Hybrid Launcher (Rust Native Core + Python GTK3/Cairo Animated UI)
+# ==============================================================================
 set -e
 
 DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
-# Try local target directory or standard project path
-if [ -f "$DIR/../target/release/forwardbin" ]; then
-    RUST_BIN="$DIR/../target/release/forwardbin"
-elif [ -f "/home/sankalp/projects/forwardbin/target/release/forwardbin" ]; then
-    RUST_BIN="/home/sankalp/projects/forwardbin/target/release/forwardbin"
-elif [ -f "/home/sankalp/projects/forwardbin-rs/target/release/forwardbin" ]; then
-    RUST_BIN="/home/sankalp/projects/forwardbin-rs/target/release/forwardbin"
-else
-    echo "❌ Error: ForwardBin Rust binary not found. Run 'make build' or 'cargo build --release'."
+
+# 1. Locate the native Rust core binary
+RUST_BIN=""
+CANDIDATES=(
+    "$HOME/.local/lib/forwardbin/forwardbin-core"
+    "$DIR/../target/release/forwardbin"
+    "$DIR/forwardbin-core"
+    "$(which forwardbin-core 2>/dev/null || true)"
+)
+
+for c in "${CANDIDATES[@]}"; do
+    if [ -n "$c" ] && [ -x "$c" ]; then
+        RUST_BIN="$c"
+        break
+    fi
+done
+
+if [ -z "$RUST_BIN" ]; then
+    echo "❌ Error: ForwardBin native Rust binary not found."
+    echo "Please run './install.sh' or 'cargo build --release'."
     exit 1
 fi
 
-PROJECT_DIR="/home/sankalp/projects/forwardbin"
-
-# If the command is "ui" (or no argument is given), launch the rich Cairo/GTK3 floating UI
+# 2. Route commands:
+# If "ui" (or no argument), launch the GTK3/Cairo desktop floating widget
 if [ "$1" = "ui" ] || [ -z "$1" ]; then
-    export PYTHONPATH="$PROJECT_DIR:$PYTHONPATH"
+    # If running from local source tree, include it in PYTHONPATH
+    if [ -d "$DIR/../forwardbin" ]; then
+        export PYTHONPATH="$DIR/..:$PYTHONPATH"
+    fi
     export GDK_BACKEND=x11
     exec python3 -m forwardbin.cli ui
 else
-    # All CLI subcommands and background daemon run through high-speed native Rust
+    # All CLI subcommands and 24/7 background daemon run through high-speed Rust
     exec "$RUST_BIN" "$@"
 fi

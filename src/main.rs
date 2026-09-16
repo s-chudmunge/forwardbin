@@ -36,11 +36,15 @@ enum Commands {
         #[arg(short, long, default_value_t = 60)]
         interval: u64,
     },
-    /// View configuration
+    /// View or modify configuration
     Config {
         #[arg(long)]
         show: bool,
+        #[arg(long)]
+        setup: bool,
     },
+    /// Interactive onboarding setup wizard
+    Setup,
     /// Send a test verification email via Resend
     TestEmail,
     /// Delete a scheduled item by ID
@@ -227,7 +231,14 @@ async fn main() {
         Some(Commands::Daemon { interval }) => {
             daemon::run_daemon_loop(interval).await;
         }
-        Some(Commands::Config { show: _ }) => {
+        Some(Commands::Setup) => {
+            run_setup_wizard();
+        }
+        Some(Commands::Config { show: _, setup }) => {
+            if setup {
+                run_setup_wizard();
+                return;
+            }
             let cfg = config::load_config();
             let mut disp = serde_json::to_value(&cfg).unwrap_or_default();
             if let Some(obj) = disp.as_object_mut() {
@@ -287,3 +298,76 @@ async fn main() {
         }
     }
 }
+
+fn run_setup_wizard() {
+    use std::io::{self, Write};
+    let mut cfg = config::load_config();
+
+    println!("\n╔══════════════════════════════════════════════════════════════════╗");
+    println!("║       ⚡ Welcome to ForwardBin Jarvis - Quick Setup Wizard       ║");
+    println!("╚══════════════════════════════════════════════════════════════════╝\n");
+    println!("Configure your scheduling assistant in 30 seconds:\n");
+
+    let curr_email = if cfg.user_email.is_empty() { "none" } else { &cfg.user_email };
+    print!("1. Recipient Email for reminders & bookings [{}]: ", curr_email);
+    io::stdout().flush().ok();
+    let mut email = String::new();
+    io::stdin().read_line(&mut email).ok();
+    let email = email.trim();
+    if !email.is_empty() {
+        cfg.user_email = email.to_string();
+    }
+
+    let curr_resend = if cfg.resend_api_key.is_empty() { "none" } else { "configured" };
+    print!("2. Resend API Key (optional, press Enter to skip) [{}]: ", curr_resend);
+    io::stdout().flush().ok();
+    let mut resend_key = String::new();
+    io::stdin().read_line(&mut resend_key).ok();
+    let resend_key = resend_key.trim();
+    if !resend_key.is_empty() {
+        cfg.resend_api_key = resend_key.to_string();
+    }
+
+    if !cfg.resend_api_key.is_empty() {
+        let curr_sender = if cfg.resend_sender.is_empty() { "onboarding@resend.dev" } else { &cfg.resend_sender };
+        print!("3. Resend Sender Address [{}]: ", curr_sender);
+        io::stdout().flush().ok();
+        let mut sender = String::new();
+        io::stdin().read_line(&mut sender).ok();
+        let sender = sender.trim();
+        if !sender.is_empty() {
+            cfg.resend_sender = sender.to_string();
+        } else if cfg.resend_sender.is_empty() {
+            cfg.resend_sender = "onboarding@resend.dev".to_string();
+        }
+    }
+
+    let curr_or = if cfg.openrouter_api_key.is_empty() { "none" } else { "configured" };
+    print!("4. OpenRouter API Key (optional, for LLaMA 3.3 analysis) [{}]: ", curr_or);
+    io::stdout().flush().ok();
+    let mut or_key = String::new();
+    io::stdin().read_line(&mut or_key).ok();
+    let or_key = or_key.trim();
+    if !or_key.is_empty() {
+        cfg.openrouter_api_key = or_key.to_string();
+    }
+
+    print!("5. Local Timezone [{}]: ", cfg.user_timezone);
+    io::stdout().flush().ok();
+    let mut tz_input = String::new();
+    io::stdin().read_line(&mut tz_input).ok();
+    let tz_input = tz_input.trim();
+    if !tz_input.is_empty() {
+        cfg.user_timezone = tz_input.to_string();
+    }
+
+    match config::save_config(&cfg) {
+        Ok(_) => {
+            println!("\n✅ Configuration successfully saved to: ~/.config/forwardbin/config.json");
+            println!("💡 Run 'forwardbin test-email' to verify email delivery.");
+            println!("💡 Run 'forwardbin ui' to launch your floating desktop bin!\n");
+        }
+        Err(e) => eprintln!("❌ Failed to save config: {}", e),
+    }
+}
+
