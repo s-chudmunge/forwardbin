@@ -157,7 +157,7 @@ def extract_arxiv(url: str) -> Dict[str, Any]:
 def parse_explicit_event_timing(soup: BeautifulSoup, raw_html: str, target_tz_name: str = "Asia/Kolkata"):
     """
     Deterministically extracts exact event start/end datetime and converts to user local timezone.
-    Handles Slate university registration (Georgetown, etc.), Eventbrite, Zoom, Luma, Schema.org Event, etc.
+    Handles Slate event registration, Eventbrite, Zoom, Luma, Schema.org Event, etc.
     """
     local_tz = tz.gettz(target_tz_name) or tz.tzlocal()
 

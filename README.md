@@ -156,7 +156,7 @@ ForwardBin commands execute instantly through the compiled Rust core:
 
 ```bash
 # 🎯 Schedule a URL or event directly from your terminal
-forwardbin add "https://gradapply.georgetown.edu/register/?id=9a32578d-1828-429b-b6c0-2867b4939b02"
+forwardbin add "https://lu.ma/rust-distributed-systems"
 forwardbin add "https://www.youtube.com/watch?v=dQw4w9WgXcQ"
 forwardbin add "https://arxiv.org/abs/1706.03762"
 
@@ -190,11 +190,11 @@ ForwardBin emails are designed with a modern **Light Mode** palette matching Goo
 
 ```text
 ┌─────────────────────────────────────────────────────────────┐
-│ 🟦 ForwardBin Jarvis                         SLOT BOOKED   │
+│ 🟧 ForwardBin Jarvis                         SLOT BOOKED   │
 │ ─────────────────────────────────────────────────────────── │
-│ MS in Bioinformatics Information Session                   │
+│ Deep Dive: Scaling Distributed Consensus in Rust            │
 │                                                             │
-│ [ EVENT ]   ⏱️ Duration: 30 mins                            │
+│ [ VIDEO ]   ⏱️ Duration: 45 mins                            │
 │                                                             │
 │ ┌─────────────────────────────────────────────────────────┐ │
 │ │ 📅 Scheduled Time Slot:                                 │ │
@@ -202,13 +202,13 @@ ForwardBin emails are designed with a modern **Light Mode** palette matching Goo
 │ └─────────────────────────────────────────────────────────┘ │
 │                                                             │
 │ AI Brief:                                                   │
-│ Virtual info session for Georgetown's MS in Bioinformatics  │
-│ covering genomics, proteomics, and systems biology.         │
+│ Engineering tech talk breaking down Raft consensus, state   │
+│ machine replication, and zero-allocation async networking.  │
 │                                                             │
 │ Key Takeaways:                                              │
-│ • Interdisciplinary curriculum at PIR and Georgetown        │
-│ • Access to NIH, NCI, FDA, and NIST biotechnology hub       │
-│ • Focus on deep focus preparation & admissions questions    │
+│ • Leader election nuances and heartbeat optimization        │
+│ • Log compaction and snapshot replication at scale          │
+│ • Benchmarks vs Paxos under high packet loss networks       │
 │                                                             │
 │ [ 🔗 Open Resource ]         [ 📅 View in Google Calendar ] │
 └─────────────────────────────────────────────────────────────┘
