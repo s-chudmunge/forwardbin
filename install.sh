@@ -2,8 +2,17 @@
 # ==============================================================================
 # ForwardBin Hybrid (Rust Core + Animated UI) Universal Installer & Setup
 # Compatible with macOS (Apple Silicon & Intel) & Linux (Fedora, Ubuntu, Arch)
+# Supports pre-built releases (instant zero-compilation install) and source builds
 # ==============================================================================
 set -e
+
+# Support curl | bash one-liner installation
+if [ ! -f "${BASH_SOURCE[0]}" ] || [ "${BASH_SOURCE[0]}" = "/dev/stdin" ]; then
+    echo "⬇️  Downloading ForwardBin from GitHub..."
+    TMP_SRC="$(mktemp -d -t forwardbin-src-XXXXXX)"
+    git clone --depth 1 https://github.com/s-chudmunge/forwardbin.git "$TMP_SRC"
+    exec "$TMP_SRC/install.sh" "$@"
+fi
 
 PROJECT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 BIN_DIR="$HOME/.local/bin"
@@ -14,7 +23,7 @@ OS_TYPE="$(uname -s)"
 echo "=================================================================="
 echo "⚡  ForwardBin Jarvis Hybrid Installer"
 echo "=================================================================="
-echo "📂 Project Source: $PROJECT_DIR"
+echo "📂 Installer Location: $PROJECT_DIR"
 if [ "$OS_TYPE" = "Darwin" ]; then
     echo "🍎 Platform: macOS (Darwin $(uname -m))"
 else
@@ -31,63 +40,44 @@ fi
 export PATH="$BIN_DIR:$PATH"
 
 # ------------------------------------------------------------------------------
-# 2. Dependency Checks & Helpful Distro/OS Guidance
+# 2. Check for Pre-built Binary or Compiler
 # ------------------------------------------------------------------------------
-MISSING_DEPS=()
-
-if ! command -v cargo &>/dev/null; then
-    MISSING_DEPS+=("cargo (Rust toolchain)")
-fi
-if ! command -v python3 &>/dev/null; then
-    MISSING_DEPS+=("python3")
-fi
-
-# On Linux, verify GTK3 Python bindings
-if [ "$OS_TYPE" != "Darwin" ] && command -v python3 &>/dev/null; then
-    if ! python3 -c "import gi, cairo; gi.require_version('Gtk', '3.0')" &>/dev/null; then
-        MISSING_DEPS+=("GTK3/Cairo Python bindings (PyGObject & pycairo)")
-    fi
+PREBUILT=""
+if [ -f "$PROJECT_DIR/forwardbin-core" ] && [ -x "$PROJECT_DIR/forwardbin-core" ]; then
+    PREBUILT="$PROJECT_DIR/forwardbin-core"
+elif [ -f "$PROJECT_DIR/bin/forwardbin-core" ] && [ -x "$PROJECT_DIR/bin/forwardbin-core" ]; then
+    PREBUILT="$PROJECT_DIR/bin/forwardbin-core"
+elif [ -f "$PROJECT_DIR/target/release/forwardbin" ] && [ -x "$PROJECT_DIR/target/release/forwardbin" ]; then
+    PREBUILT="$PROJECT_DIR/target/release/forwardbin"
 fi
 
-if [ ${#MISSING_DEPS[@]} -gt 0 ]; then
-    echo "⚠️  Missing required dependencies: ${MISSING_DEPS[*]}"
-    echo ""
-    echo "Please install them to continue:"
-    if [ "$OS_TYPE" = "Darwin" ]; then
-        echo "  👉 macOS (Homebrew):"
-        echo "     brew install rust python3"
-        echo "     (or install Rust from https://rustup.rs)"
-    elif [ -f /etc/fedora-release ] || [ -f /etc/redhat-release ]; then
-        echo "  👉 Fedora / RHEL:"
-        echo "     sudo dnf install -y cargo gtk3 python3-gobject python3-cairo python3-pip"
-    elif [ -f /etc/debian_version ]; then
-        echo "  👉 Ubuntu / Debian / Mint:"
-        echo "     sudo apt update && sudo apt install -y cargo gir1.2-gtk-3.0 python3-gi python3-gi-cairo python3-cairo python3-pip"
-    elif [ -f /etc/arch-release ]; then
-        echo "  👉 Arch Linux / Manjaro:"
-        echo "     sudo pacman -S --needed rust gtk3 python-gobject python-cairo python-pip"
-    else
-        echo "  👉 Install Rust: https://rustup.rs"
-    fi
-    echo ""
-    read -rp "Would you like to proceed anyway? (y/N): " CONTINUE_ANYWAY
-    if [[ ! "$CONTINUE_ANYWAY" =~ ^[Yy]$ ]]; then
-        echo "Installation aborted. Please install the required packages and run ./install.sh again."
+if [ -n "$PREBUILT" ]; then
+    echo "🚀 Pre-compiled native Rust engine found! (Instant install, no compiler needed)"
+else
+    if ! command -v cargo &>/dev/null; then
+        echo "⚠️  Pre-compiled binary not found and cargo (Rust toolchain) is missing."
+        echo ""
+        echo "Please install Rust (https://rustup.rs) or download a pre-built release package."
         exit 1
     fi
+    echo "🦀 Compiling native Rust core from source (daemon, scheduler, CLI)..."
+    cd "$PROJECT_DIR"
+    cargo build --release
+    PREBUILT="$PROJECT_DIR/target/release/forwardbin"
 fi
 
 # ------------------------------------------------------------------------------
-# 3. Build Native Rust Release Binary
-# ------------------------------------------------------------------------------
-echo "🦀 Compiling native Rust core (daemon, scheduler, CLI)..."
-cd "$PROJECT_DIR"
-cargo build --release
-
-# ------------------------------------------------------------------------------
-# 4. Setup Python UI Environment
+# 3. Setup Python UI Environment
 # ------------------------------------------------------------------------------
 echo "🐍 Setting up Python UI environment..."
+mkdir -p "$LIB_DIR" "$LIB_DIR/python" "$BIN_DIR"
+
+# Copy Python modules for 100% self-contained standalone execution
+if [ -d "$PROJECT_DIR/forwardbin" ]; then
+    rm -rf "$LIB_DIR/python/forwardbin"
+    cp -r "$PROJECT_DIR/forwardbin" "$LIB_DIR/python/"
+fi
+
 if command -v pip3 &>/dev/null || command -v pip &>/dev/null; then
     PIP_CMD="$(command -v pip3 || command -v pip)"
     $PIP_CMD install --user -e "$PROJECT_DIR" 2>/dev/null || \
@@ -96,12 +86,11 @@ if command -v pip3 &>/dev/null || command -v pip &>/dev/null; then
 fi
 
 # ------------------------------------------------------------------------------
-# 5. Install Rust Core Binary & Unified Launcher
+# 4. Install Rust Core Binary & Unified Launcher
 # ------------------------------------------------------------------------------
 echo "📦 Installing binaries to $BIN_DIR..."
-mkdir -p "$BIN_DIR" "$LIB_DIR"
 rm -f "$LIB_DIR/forwardbin-core"
-cp "$PROJECT_DIR/target/release/forwardbin" "$LIB_DIR/forwardbin-core"
+cp "$PREBUILT" "$LIB_DIR/forwardbin-core"
 chmod +x "$LIB_DIR/forwardbin-core"
 
 rm -f "$BIN_DIR/forwardbin"
@@ -109,7 +98,7 @@ cp "$PROJECT_DIR/bin/forwardbin" "$BIN_DIR/forwardbin"
 chmod +x "$BIN_DIR/forwardbin"
 
 # ------------------------------------------------------------------------------
-# 6. Configure Background Daemons (launchd on macOS, systemd on Linux)
+# 5. Configure Background Daemons (launchd on macOS, systemd on Linux)
 # ------------------------------------------------------------------------------
 if [ "$OS_TYPE" = "Darwin" ]; then
     echo "🍎 Configuring macOS launchd LaunchAgents service..."
@@ -144,26 +133,33 @@ else
 fi
 
 # ------------------------------------------------------------------------------
-# 7. Check Configuration File
+# 6. First-Time Configuration Prompt
 # ------------------------------------------------------------------------------
 mkdir -p "$CONFIG_DIR"
 if [ ! -f "$CONFIG_DIR/config.json" ]; then
     echo ""
-    echo "💡 No configuration file detected at ~/.config/forwardbin/config.json."
-    read -rp "Would you like to run the 30-second setup wizard now? (Y/n): " RUN_WIZARD
+    echo "=================================================================="
+    echo "🧙  First-Time Setup: Configure ForwardBin"
+    echo "=================================================================="
+    echo "Would you like to run the configuration wizard now?"
+    read -rp "(Set your notification email, timezone, API keys) [Y/n]: " RUN_WIZARD
     if [[ ! "$RUN_WIZARD" =~ ^[Nn]$ ]]; then
-        "$BIN_DIR/forwardbin" setup
+        "$BIN_DIR/forwardbin" setup || true
     fi
 fi
 
 echo ""
 echo "=================================================================="
-echo "✅ ForwardBin Hybrid installed successfully!"
+echo "🎉  ForwardBin Installation Complete!"
 echo "=================================================================="
-echo "🚀 Getting started:"
-echo "   - Floating Drop Bin:   forwardbin ui"
-echo "   - Add any link/video:  forwardbin add <URL>"
-echo "   - Snatch clipboard:    forwardbin clipboard"
-echo "   - View scheduled queue:forwardbin list"
-echo "   - Quick Setup Wizard:  forwardbin setup"
+echo "Commands to get started:"
+echo "  • forwardbin add <url>      - Schedule a video, paper, or link"
+echo "  • forwardbin clipboard      - Snatch clipboard contents immediately"
+echo "  • forwardbin list           - View upcoming scheduled reading slots"
+echo "  • forwardbin ui             - Launch/focus the floating desktop drop bin"
+echo "  • forwardbin setup          - Re-run configuration wizard anytime"
+echo ""
+echo "💡 Tip: Make sure $BIN_DIR is in your PATH."
+echo "   Add this to your ~/.bashrc or ~/.zshrc if needed:"
+echo "   export PATH=\"\$HOME/.local/bin:\$PATH\""
 echo "=================================================================="

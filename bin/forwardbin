@@ -31,8 +31,10 @@ fi
 # 2. Route commands:
 # If "ui" (or no argument), launch the GTK3/Cairo desktop floating widget
 if [ "$1" = "ui" ] || [ -z "$1" ]; then
-    # If running from local source tree, include it in PYTHONPATH
-    if [ -d "$DIR/../forwardbin" ]; then
+    # Prefer permanently installed library directory, fallback to source tree
+    if [ -d "$HOME/.local/lib/forwardbin/python" ]; then
+        export PYTHONPATH="$HOME/.local/lib/forwardbin/python:$PYTHONPATH"
+    elif [ -d "$DIR/../forwardbin" ]; then
         export PYTHONPATH="$DIR/..:$PYTHONPATH"
     fi
     export GDK_BACKEND=x11

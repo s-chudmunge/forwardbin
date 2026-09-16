@@ -111,33 +111,37 @@ ForwardBin achieves the best of both worlds: **maximum desktop visual fidelity**
 
 ---
 
-## 🚀 Quick Start (1-Minute Installation)
+## 🚀 Download & Installation
 
-### 1. Prerequisites
-
+### Option 1: 1-Line Quick Install (Terminal)
+Run this single command in your terminal to download and set up ForwardBin:
 ```bash
-# On Fedora / RHEL:
-sudo dnf install -y cargo gtk3 python3-gobject python3-cairo python3-pip
-
-# On Ubuntu / Debian / Mint:
-sudo apt update && sudo apt install -y cargo gir1.2-gtk-3.0 python3-gi python3-gi-cairo python3-cairo python3-pip
-
-# On Arch Linux:
-sudo pacman -S --needed rust gtk3 python-gobject python-cairo python-pip
-
-# On macOS (Homebrew):
-brew install rust python3
+curl -fsSL https://raw.githubusercontent.com/s-chudmunge/forwardbin/main/install.sh | bash
 ```
 
-### 2. Install ForwardBin
+### Option 2: Download Standalone Installer (.run)
+Download the self-extracting single-file installer from [GitHub Releases](https://github.com/s-chudmunge/forwardbin/releases/latest):
+```bash
+# 1. Make it executable
+chmod +x forwardbin-installer.run
 
+# 2. Run installer (no git, cargo, or compiler required)
+./forwardbin-installer.run
+```
+
+### Option 3: Download Pre-built Release Archive (.tar.gz)
+```bash
+# Download from GitHub Releases, extract, and install in 1 second:
+tar -xzf forwardbin-v1.0.0-linux-x86_64.tar.gz
+cd forwardbin-v1.0.0
+./install.sh
+```
+
+### Option 4: Build From Source (Developers)
 ```bash
 git clone https://github.com/s-chudmunge/forwardbin.git
 cd forwardbin
-
-# Run the universal installer
 ./install.sh
-# (or: make install)
 ```
 
 ### 3. Run the Interactive 30-Second Setup Wizard
