@@ -27,15 +27,15 @@ from forwardbin.daemon import run_check_cycle
 CSS_STYLE = b"""
 window.floating-bin {
     background-color: rgba(13, 17, 23, 0.88);
-    border: 2px solid rgba(88, 166, 255, 0.7);
+    border: 2px solid rgba(217, 119, 87, 0.7);
     border-radius: 24px;
-    box-shadow: 0 8px 32px rgba(0, 0, 0, 0.6), 0 0 16px rgba(88, 166, 255, 0.3);
+    box-shadow: 0 8px 32px rgba(0, 0, 0, 0.6), 0 0 16px rgba(217, 119, 87, 0.35);
 }
 
 window.floating-bin.drag-hover {
     background-color: rgba(22, 27, 34, 0.96);
-    border: 2px solid #58a6ff;
-    box-shadow: 0 0 24px rgba(88, 166, 255, 0.8);
+    border: 2px solid #D97757;
+    box-shadow: 0 0 24px rgba(217, 119, 87, 0.8);
 }
 
 .pill-container {
@@ -43,7 +43,7 @@ window.floating-bin.drag-hover {
 }
 
 .jarvis-title {
-    color: #58a6ff;
+    color: #D97757;
     font-weight: 800;
     font-size: 13px;
     letter-spacing: 0.5px;
@@ -86,8 +86,8 @@ window.floating-bin.drag-hover {
 }
 
 .badge-article {
-    background-color: rgba(88, 166, 255, 0.25);
-    color: #58a6ff;
+    background-color: rgba(217, 119, 87, 0.25);
+    color: #D97757;
     border-radius: 4px;
     padding: 2px 6px;
     font-size: 10px;

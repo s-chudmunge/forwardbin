@@ -177,8 +177,8 @@ class MacOSFloatingBin:
             if time.time() - self.status_timer > 3.0:
                 self.status = "idle"
         else:
-            ring_color = "#00f2fe"
-            core_color = "#0070f3"
+            ring_color = "#D97757"
+            core_color = "#EA8C6E"
 
         # Outer pulsing glow ring
         glow_r = r + math.sin(self.pulse) * 3

@@ -361,15 +361,15 @@ class AnimatedBinWindow(Gtk.Window):
             cr.scale(top_rx, top_ry)
             cavity_pat = cairo.RadialGradient(0, 0, 0.1, 0, 0, 1.0)
             glow_intensity = 0.6 + 0.4 * math.sin(self.pulse_phase)
-            cavity_pat.add_color_stop_rgba(0.0, 0.35, 0.65, 1.0, 0.95 * openness * glow_intensity)
-            cavity_pat.add_color_stop_rgba(0.5, 0.12, 0.35, 0.7, 0.75 * openness)
-            cavity_pat.add_color_stop_rgba(1.0, 0.04, 0.06, 0.1, 0.95)
+            cavity_pat.add_color_stop_rgba(0.0, 0.94, 0.62, 0.50, 0.95 * openness * glow_intensity)
+            cavity_pat.add_color_stop_rgba(0.5, 0.851, 0.467, 0.341, 0.75 * openness)
+            cavity_pat.add_color_stop_rgba(1.0, 0.16, 0.07, 0.05, 0.95)
             cr.arc(0, 0, 1.0, 0, 2 * math.pi)
             cr.set_source(cavity_pat)
             cr.fill()
 
             # Glowing suction rings inside
-            cr.set_source_rgba(0.4, 0.75, 1.0, 0.8 * openness)
+            cr.set_source_rgba(0.96, 0.72, 0.60, 0.85 * openness)
             cr.set_line_width(0.07)
             cr.arc(0, 0, 0.65, 0, 2 * math.pi)
             cr.stroke()
@@ -377,7 +377,7 @@ class AnimatedBinWindow(Gtk.Window):
             cr.stroke()
             cr.restore()
 
-        # C. Bin Body
+        # C. Bin Body in Terracotta (#D97757)
         cr.save()
         cr.move_to(cx - top_rx, top_y)
         cr.curve_to(cx - top_rx, top_y + top_ry, cx + top_rx, top_y + top_ry, cx + top_rx, top_y)
@@ -385,19 +385,19 @@ class AnimatedBinWindow(Gtk.Window):
         cr.curve_to(cx + bot_rx, bot_y + bot_ry, cx - bot_rx, bot_y + bot_ry, cx - bot_rx, bot_y)
         cr.close_path()
 
-        # Metallic Obsidian Gradient
+        # Terracotta Satin Gradient
         body_pat = cairo.LinearGradient(cx - top_rx, 0, cx + top_rx, 0)
-        body_pat.add_color_stop_rgb(0.0, 0.10, 0.13, 0.17)
-        body_pat.add_color_stop_rgb(0.25, 0.22, 0.27, 0.35)
-        body_pat.add_color_stop_rgb(0.55, 0.15, 0.19, 0.25)
-        body_pat.add_color_stop_rgb(0.85, 0.20, 0.24, 0.32)
-        body_pat.add_color_stop_rgb(1.0, 0.08, 0.10, 0.14)
+        body_pat.add_color_stop_rgb(0.0, 0.55, 0.23, 0.13)   # left shadow edge
+        body_pat.add_color_stop_rgb(0.22, 0.94, 0.60, 0.49)  # specular highlight sheen
+        body_pat.add_color_stop_rgb(0.50, 0.851, 0.467, 0.341) # logo terracotta (#D97757)
+        body_pat.add_color_stop_rgb(0.80, 0.77, 0.36, 0.23)  # mid shadow
+        body_pat.add_color_stop_rgb(1.0, 0.48, 0.18, 0.10)   # right shadow edge
         cr.set_source(body_pat)
         cr.fill_preserve()
 
         # Outer border
-        border_glow = 0.9 if self.is_drag_hover else (0.45 if not self.is_processing else 0.9)
-        cr.set_source_rgba(0.35, 0.65, 1.0, border_glow)
+        border_glow = 0.95 if self.is_drag_hover else (0.55 if not self.is_processing else 0.95)
+        cr.set_source_rgba(0.95, 0.65, 0.52, border_glow)
         cr.set_line_width(1.4)
         cr.stroke()
 
@@ -407,54 +407,61 @@ class AnimatedBinWindow(Gtk.Window):
             rx_b = cx + rib_frac * bot_rx
             cr.move_to(rx_t, top_y + 6)
             cr.line_to(rx_b, bot_y - 5)
-            cr.set_source_rgba(0.05, 0.07, 0.10, 0.6)
+            cr.set_source_rgba(0.38, 0.14, 0.08, 0.55)
             cr.set_line_width(1.6)
             cr.stroke()
             cr.move_to(rx_t + 0.8, top_y + 6)
             cr.line_to(rx_b + 0.8, bot_y - 5)
-            cr.set_source_rgba(0.45, 0.55, 0.70, 0.3)
+            cr.set_source_rgba(0.96, 0.70, 0.58, 0.35)
             cr.set_line_width(0.8)
             cr.stroke()
         cr.restore()
 
-        # D. Cool Animated Jarvis Arc Reactor Core (No Time / Dial)
+        # D. Central Front Emblem: The ForwardBin Logo Badge
         reactor_y = top_y + bin_h * 0.48
         cr.save()
         cr.translate(cx, reactor_y)
 
-        # Outer Reactor Ring
-        cr.arc(0, 0, 12.0, 0, 2 * math.pi)
-        cr.set_source_rgba(0.06, 0.10, 0.16, 0.95)
+        # Base emblem backing plate (dark metallic circle)
+        cr.arc(0, 0, 13.0, 0, 2 * math.pi)
+        cr.set_source_rgba(0.14, 0.05, 0.03, 0.92)
         cr.fill_preserve()
-        cr.set_source_rgba(0.35, 0.70, 1.0, 0.85)
-        cr.set_line_width(1.3)
+        cr.set_source_rgba(0.94, 0.62, 0.50, 0.85)
+        cr.set_line_width(1.2)
         cr.stroke()
 
-        # Spinning Inner Tech Core
-        cr.rotate(self.reactor_angle)
-        core_color = (0.2, 0.95, 0.45) if self.is_processing else (0.35, 0.75, 1.0)
-        pulse = 0.72 + 0.28 * math.sin(self.pulse_phase)
-
-        for seg in range(4):
-            cr.arc(0, 0, 8.2, seg * (math.pi/2) + 0.20, (seg + 1) * (math.pi/2) - 0.20)
-            cr.set_source_rgba(core_color[0], core_color[1], core_color[2], 0.88 * pulse)
-            cr.set_line_width(2.2)
-            cr.stroke()
-
-        # Center Forward Chevron Symbol >>
-        cr.restore()
+        # ForwardBin Logo inside the emblem
+        pulse = 0.82 + 0.18 * math.sin(self.pulse_phase)
         cr.save()
-        cr.translate(cx, reactor_y)
-        cr.set_source_rgba(1.0, 1.0, 1.0, 0.95 * pulse)
-        cr.set_line_width(1.5)
+        scale_factor = 0.20
+        cr.scale(scale_factor, scale_factor)
+        cr.translate(-50, -50)
+
+        logo_color = (0.2, 0.95, 0.45) if self.is_processing else (1.0, 1.0, 1.0)
+        cr.set_source_rgba(logo_color[0], logo_color[1], logo_color[2], 0.96 * pulse)
+        cr.set_line_width(11.5)
         cr.set_line_cap(cairo.LINE_CAP_ROUND)
-        cr.move_to(-3.5, -4.0)
-        cr.line_to(0.5, 0)
-        cr.line_to(-3.5, 4.0)
-        cr.move_to(1.5, -4.0)
-        cr.line_to(5.5, 0)
-        cr.line_to(1.5, 4.0)
+        cr.set_line_join(cairo.LINE_JOIN_ROUND)
+
+        # Chrono Hopper Arc
+        cr.arc(52.5, 50, 33, math.radians(52), math.radians(308))
         cr.stroke()
+
+        # Intake Chevron
+        cr.new_path()
+        cr.move_to(44.5, 34)
+        cr.line_to(60.5, 50)
+        cr.line_to(44.5, 66)
+        cr.stroke()
+
+        # Forward Vector
+        cr.new_path()
+        cr.move_to(64.5, 34)
+        cr.line_to(80.5, 50)
+        cr.line_to(64.5, 66)
+        cr.stroke()
+
+        cr.restore()
         cr.restore()
 
         # E. Top Rim Collar
@@ -463,9 +470,9 @@ class AnimatedBinWindow(Gtk.Window):
         cr.scale(top_rx, top_ry)
         cr.arc(0, 0, 1.0, 0, 2 * math.pi)
         rim_pat = cairo.LinearGradient(-1, 0, 1, 0)
-        rim_pat.add_color_stop_rgb(0.0, 0.20, 0.25, 0.32)
-        rim_pat.add_color_stop_rgb(0.5, 0.40, 0.48, 0.60)
-        rim_pat.add_color_stop_rgb(1.0, 0.15, 0.18, 0.24)
+        rim_pat.add_color_stop_rgb(0.0, 0.65, 0.28, 0.18)
+        rim_pat.add_color_stop_rgb(0.4, 0.94, 0.62, 0.50)
+        rim_pat.add_color_stop_rgb(1.0, 0.55, 0.22, 0.12)
         cr.set_source(rim_pat)
         cr.set_line_width(0.18)
         cr.stroke()
@@ -495,15 +502,15 @@ class AnimatedBinWindow(Gtk.Window):
         cr.scale(lid_rx, lid_ry)
         cr.arc(0, 0, 1.0, 0, 2 * math.pi)
         lid_pat = cairo.LinearGradient(-1, 0, 1, 0)
-        lid_pat.add_color_stop_rgb(0.0, 0.14, 0.17, 0.22)
-        lid_pat.add_color_stop_rgb(0.3, 0.35, 0.42, 0.52)
-        lid_pat.add_color_stop_rgb(0.7, 0.25, 0.30, 0.38)
-        lid_pat.add_color_stop_rgb(1.0, 0.10, 0.12, 0.16)
+        lid_pat.add_color_stop_rgb(0.0, 0.58, 0.24, 0.14)
+        lid_pat.add_color_stop_rgb(0.3, 0.94, 0.60, 0.48)
+        lid_pat.add_color_stop_rgb(0.7, 0.851, 0.467, 0.341)
+        lid_pat.add_color_stop_rgb(1.0, 0.48, 0.18, 0.10)
         cr.set_source(lid_pat)
         cr.fill_preserve()
 
         # Glowing lid rim
-        cr.set_source_rgba(0.35, 0.65, 1.0, 0.85 if self.is_drag_hover else 0.4)
+        cr.set_source_rgba(0.95, 0.65, 0.52, 0.95 if self.is_drag_hover else 0.55)
         cr.set_line_width(0.08)
         cr.stroke()
         cr.restore()
@@ -512,22 +519,22 @@ class AnimatedBinWindow(Gtk.Window):
         cr.save()
         cr.translate(cx, top_y - 6.0)
         cr.arc(0, 0, 8.0, math.pi, 2 * math.pi)
-        cr.set_source_rgba(0.7, 0.8, 0.95, 0.9)
+        cr.set_source_rgba(0.98, 0.85, 0.78, 0.95)
         cr.set_line_width(2.2)
         cr.set_line_cap(cairo.LINE_CAP_ROUND)
         cr.stroke()
 
         cr.arc(-7.0, 0, 1.6, 0, 2 * math.pi)
         cr.arc(7.0, 0, 1.6, 0, 2 * math.pi)
-        cr.set_source_rgba(0.2, 0.25, 0.35, 1.0)
+        cr.set_source_rgba(0.55, 0.23, 0.13, 1.0)
         cr.fill()
         cr.restore()
 
         # Hinge pin
         cr.arc(hinge_x, hinge_y, 2.8, 0, 2 * math.pi)
-        cr.set_source_rgba(0.1, 0.15, 0.22, 1.0)
+        cr.set_source_rgba(0.38, 0.14, 0.08, 1.0)
         cr.fill_preserve()
-        cr.set_source_rgba(0.58, 0.75, 1.0, 0.8)
+        cr.set_source_rgba(0.851, 0.467, 0.341, 0.9)
         cr.set_line_width(1.0)
         cr.stroke()
 
@@ -579,8 +586,8 @@ class AnimatedBinWindow(Gtk.Window):
         if not self.is_drag_hover:
             self.is_drag_hover = True
             self.status_text = "Feed Me!"
-            self.status_color = (0.35, 0.75, 1.0)
-            self.spawn_burst_particles(10, (0.35, 0.65, 1.0))
+            self.status_color = (0.851, 0.467, 0.341)
+            self.spawn_burst_particles(10, (0.851, 0.467, 0.341))
         Gdk.drag_status(context, Gdk.DragAction.COPY, time_stamp)
         return True
 
@@ -608,7 +615,7 @@ class AnimatedBinWindow(Gtk.Window):
             self.target_opacity = 1.0
             # Satisfying physical slam sound/particles
             self.lid_velocity = 8.0  # Slam velocity downwards to cause bounce
-            self.spawn_burst_particles(25, (1.0, 0.85, 0.3))
+            self.spawn_burst_particles(25, (0.95, 0.65, 0.45))
             self.trigger_scheduling_async(raw_text)
         else:
             context.finish(False, False, time_stamp)
@@ -631,7 +638,7 @@ class AnimatedBinWindow(Gtk.Window):
         self.wake_up_high_fps()
         self.is_processing = True
         self.status_text = "Jarvis Analyzing..."
-        self.status_color = (0.2, 0.8, 0.9)
+        self.status_color = (0.95, 0.60, 0.40)
 
         def _worker():
             try:
@@ -783,11 +790,11 @@ class AnimatedBinWindow(Gtk.Window):
         css = b"""
         window {
             background-color: #0d1117;
-            border: 1px solid #30363d;
+            border: 1px solid rgba(217, 119, 87, 0.45);
             border-radius: 12px;
         }
         .header-title {
-            color: #58a6ff;
+            color: #D97757;
             font-weight: 700;
             font-size: 14px;
         }
