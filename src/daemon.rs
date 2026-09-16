@@ -1,4 +1,3 @@
-use std::process::Command;
 use std::time::Duration;
 use tokio::time::sleep;
 use crate::config::load_config;
@@ -26,10 +25,7 @@ pub async fn run_daemon_loop(poll_interval_secs: u64) {
 
                     if cfg.send_desktop_notification {
                         let msg = format!("{}\nReady in your queue!", item.title);
-                        Command::new("notify-send")
-                            .args(["-a", "ForwardBin Jarvis", "-i", "alarm", "⏰ Time to Focus", &msg])
-                            .spawn()
-                            .ok();
+                        crate::config::send_desktop_notification("⏰ Time to Focus", &msg);
                     }
 
                     db::mark_slot_up_email_sent(&conn, item.id).ok();

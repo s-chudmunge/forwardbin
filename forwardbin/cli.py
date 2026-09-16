@@ -18,7 +18,14 @@ from forwardbin.emailer import send_booking_confirmation, send_slot_is_up_alert
 
 
 def get_clipboard_text() -> str:
-    """Read current clipboard text using wl-paste or xclip or tkinter."""
+    """Read current clipboard text using pbpaste (macOS) or wl-paste/xclip/tkinter (Linux)."""
+    try:
+        res = subprocess.run(["pbpaste"], capture_output=True, text=True, timeout=2)
+        if res.returncode == 0 and res.stdout.strip():
+            return res.stdout.strip()
+    except Exception:
+        pass
+
     try:
         res = subprocess.run(["wl-paste", "--no-newline"], capture_output=True, text=True, timeout=2)
         if res.returncode == 0 and res.stdout.strip():

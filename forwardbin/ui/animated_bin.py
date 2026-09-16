@@ -13,8 +13,8 @@ Features:
 import sys
 import os
 
-# Force X11 backend (XWayland) so window can position at bottom-right corner without compositor centering
-if "GDK_BACKEND" not in os.environ:
+# Force X11 backend on Linux (XWayland) so window can position at bottom-right corner without compositor centering
+if sys.platform != "darwin" and "GDK_BACKEND" not in os.environ:
     os.environ["GDK_BACKEND"] = "x11"
 
 import math
@@ -24,12 +24,16 @@ import threading
 from datetime import datetime
 from typing import List, Dict, Any, Optional
 
-import cairo
-import gi
-gi.require_version("Gtk", "3.0")
-gi.require_version("Gdk", "3.0")
-gi.require_version("PangoCairo", "1.0")
-from gi.repository import Gtk, Gdk, GLib, Pango, PangoCairo
+try:
+    import cairo
+    import gi
+    gi.require_version("Gtk", "3.0")
+    gi.require_version("Gdk", "3.0")
+    gi.require_version("PangoCairo", "1.0")
+    from gi.repository import Gtk, Gdk, GLib, Pango, PangoCairo
+    HAS_GTK3 = True
+except Exception:
+    HAS_GTK3 = False
 
 from forwardbin.config import load_config, save_config
 from forwardbin.core import process_dropped_content
@@ -913,6 +917,15 @@ class AnimatedBinWindow(Gtk.Window):
 
 
 def launch_animated_ui():
+    if not HAS_GTK3:
+        try:
+            from forwardbin.ui.macos_bin import launch_macos_ui
+            launch_macos_ui()
+            return
+        except Exception as e:
+            print(f"Error launching UI: {e}")
+            return
+
     win = AnimatedBinWindow()
     win.show_all()
     Gtk.main()

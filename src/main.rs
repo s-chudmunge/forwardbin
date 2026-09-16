@@ -52,6 +52,12 @@ enum Commands {
 }
 
 fn get_clipboard_text() -> String {
+    if let Ok(output) = Command::new("pbpaste").output() {
+        if output.status.success() {
+            let s = String::from_utf8_lossy(&output.stdout).trim().to_string();
+            if !s.is_empty() { return s; }
+        }
+    }
     if let Ok(output) = Command::new("wl-paste").arg("--no-newline").output() {
         if output.status.success() {
             let s = String::from_utf8_lossy(&output.stdout).trim().to_string();
@@ -173,10 +179,7 @@ async fn process_content(raw: &str) {
 
             if cfg.send_desktop_notification {
                 let msg = format!("{}\nScheduled for {}", item.title, start_dt.format("%I:%M %p"));
-                Command::new("notify-send")
-                    .args(["-a", "ForwardBin Jarvis", "-i", "calendar", "✅ Scheduled in ForwardBin", &msg])
-                    .spawn()
-                    .ok();
+                config::send_desktop_notification("✅ Scheduled in ForwardBin", &msg);
             }
         }
         Err(e) => eprintln!("Failed to save item: {}", e),

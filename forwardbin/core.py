@@ -23,7 +23,18 @@ from forwardbin.emailer import send_booking_confirmation
 
 
 def send_desktop_notification(title: str, message: str, icon: str = "calendar") -> None:
-    """Send native Fedora GNOME desktop notification using notify-send."""
+    """Send native desktop notification using notify-send (Linux) or osascript (macOS)."""
+    import sys
+    if sys.platform == "darwin":
+        try:
+            clean_msg = message.replace('"', '\\"')
+            clean_title = title.replace('"', '\\"')
+            script = f'display notification "{clean_msg}" with title "ForwardBin Jarvis" subtitle "{clean_title}"'
+            subprocess.run(["osascript", "-e", script], check=False)
+            return
+        except Exception:
+            pass
+
     try:
         subprocess.run([
             "notify-send",

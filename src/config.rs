@@ -184,3 +184,20 @@ pub fn save_config(cfg: &Config) -> std::io::Result<()> {
     let data = serde_json::to_string_pretty(cfg)?;
     fs::write(file, data)
 }
+
+pub fn send_desktop_notification(title: &str, body: &str) {
+    if cfg!(target_os = "macos") {
+        let script = format!(
+            r#"display notification "{}" with title "ForwardBin Jarvis" subtitle "{}""#,
+            body.replace('"', "\\\""),
+            title.replace('"', "\\\"")
+        );
+        let _ = std::process::Command::new("osascript")
+            .args(["-e", &script])
+            .spawn();
+    } else {
+        let _ = std::process::Command::new("notify-send")
+            .args(["-a", "ForwardBin Jarvis", "-i", "calendar", title, body])
+            .spawn();
+    }
+}
