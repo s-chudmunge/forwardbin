@@ -1,5 +1,5 @@
 <p align="center">
-  <img src="assets/forwardbin.svg" alt="ForwardBin Logo" width="84" height="84" />
+  <img src="assets/logo.svg" alt="ForwardBin Logo" width="84" height="84" />
 </p>
 
 <h1 align="center">ForwardBin Jarvis</h1>
