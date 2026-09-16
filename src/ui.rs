@@ -11,7 +11,7 @@ use x11rb::protocol::Event;
 
 pub struct AnimatedBin {
     pub width: u32,
-    pub height: u32,
+    pub _height: u32,
     pub lid_angle: f32,
     pub target_lid_angle: f32,
     pub lid_velocity: f32,
@@ -26,7 +26,7 @@ impl AnimatedBin {
     pub fn new(w: u32, h: u32) -> Self {
         Self {
             width: w,
-            height: h,
+            _height: h,
             lid_angle: 0.0,
             target_lid_angle: 0.0,
             lid_velocity: 0.0,
@@ -74,7 +74,7 @@ impl AnimatedBin {
         let bin_h = 62.0;
         let bot_y = top_y + bin_h;
         let top_rx = 30.0;
-        let top_ry = 9.0;
+        let _top_ry = 9.0;
         let bot_rx = 24.0;
         let bot_ry = 7.0;
 

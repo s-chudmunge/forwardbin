@@ -96,6 +96,7 @@ pub fn generate_gcal_link(
     format!("https://calendar.google.com/calendar/render?{}", encoded_params)
 }
 
+#[allow(dead_code)]
 pub fn generate_ics_content(
     title: &str,
     start: &DateTime<Local>,

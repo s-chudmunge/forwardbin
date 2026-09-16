@@ -186,18 +186,14 @@ pub fn save_config(cfg: &Config) -> std::io::Result<()> {
 }
 
 pub fn send_desktop_notification(title: &str, body: &str) {
-    if cfg!(target_os = "macos") {
-        let script = format!(
-            r#"display notification "{}" with title "ForwardBin Jarvis" subtitle "{}""#,
-            body.replace('"', "\\\""),
-            title.replace('"', "\\\"")
-        );
-        let _ = std::process::Command::new("osascript")
-            .args(["-e", &script])
-            .spawn();
-    } else {
-        let _ = std::process::Command::new("notify-send")
-            .args(["-a", "ForwardBin Jarvis", "-i", "calendar", title, body])
-            .spawn();
+    if let Err(e) = notify_rust::Notification::new()
+        .appname("ForwardBin Jarvis")
+        .summary(title)
+        .body(body)
+        .icon("calendar")
+        .timeout(notify_rust::Timeout::Milliseconds(6000))
+        .show()
+    {
+        eprintln!("[Notification] Warning: Failed to send desktop notification via D-Bus: {}", e);
     }
 }

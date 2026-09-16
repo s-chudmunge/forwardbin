@@ -21,7 +21,17 @@ chrono = { version = "0.4", features = ["serde"] }
 dirs = "5"
 url = "2"
 regex = "1"
+arboard = "3.4"
+async-io = "2"
+notify-rust = "4"
 
 # UI & Graphics (100% Pure Rust, zero C-devel headers needed!)
 tiny-skia = "0.11"
 x11rb = { version = "0.13", features = ["all-extensions"] }
+
+[profile.release]
+opt-level = 3
+lto = "fat"
+codegen-units = 1
+panic = "abort"
+strip = true

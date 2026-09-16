@@ -1,8 +1,45 @@
+use std::sync::LazyLock;
 use chrono::{DateTime, Duration as ChronoDuration, FixedOffset, Local, NaiveDateTime, TimeZone};
 use regex::Regex;
 use serde::{Deserialize, Serialize};
 use serde_json::json;
 use crate::config::Config;
+
+static RE_OG_TITLE: LazyLock<Regex> = LazyLock::new(|| {
+    Regex::new(r#"(?i)<meta\s+property=["']og:title["']\s+content=["']([^"']+)["']"#).unwrap()
+});
+static RE_TITLE_TAG: LazyLock<Regex> = LazyLock::new(|| {
+    Regex::new(r#"(?i)<title[^>]*>([^<]+)</title>"#).unwrap()
+});
+static RE_UTC_OFFSET: LazyLock<Regex> = LazyLock::new(|| {
+    Regex::new(r#"UTC\s*([+-]\d{2}):?(\d{2})?"#).unwrap()
+});
+static RE_TZ_ABBR: LazyLock<Regex> = LazyLock::new(|| {
+    Regex::new(r#"\b(EDT|EST|CDT|CST|MDT|MST|PDT|PST|IST|UTC|GMT)\b"#).unwrap()
+});
+static RE_FORM_DATE: LazyLock<Regex> = LazyLock::new(|| {
+    Regex::new(r#"<input[^>]+(?:id|name)=["'](?:form_date|event_date)["'][^>]+value=["'](\d{4}-\d{2}-\d{2}T\d{2}:\d{2}(?::\d{2})?)["']"#).unwrap()
+});
+static RE_UNTIL_TIME: LazyLock<Regex> = LazyLock::new(|| {
+    Regex::new(r#"(?i)until\s+(\d{1,2}:\d{2}\s*[AP]M)"#).unwrap()
+});
+static RE_OG_DESC: LazyLock<Regex> = LazyLock::new(|| {
+    Regex::new(r#"(?i)<meta\s+property=["']og:description["']\s+content=["']([^"']+)["']"#).unwrap()
+});
+
+static TZ_MAP: &[(&str, i32)] = &[
+    ("EDT", -4 * 3600),
+    ("EST", -5 * 3600),
+    ("CDT", -5 * 3600),
+    ("CST", -6 * 3600),
+    ("MDT", -6 * 3600),
+    ("MST", -7 * 3600),
+    ("PDT", -7 * 3600),
+    ("PST", -8 * 3600),
+    ("IST", (5 * 3600) + (30 * 60)),
+    ("UTC", 0),
+    ("GMT", 0),
+];
 
 #[derive(Debug, Clone, Serialize, Deserialize)]
 pub struct AnalysisResult {
@@ -48,53 +85,31 @@ async fn fetch_page_metadata(client: &reqwest::Client, url: &str) -> Option<Page
     let html = resp.text().await.ok()?;
     let mut meta = PageMetadata::default();
 
-    // 1. Title extraction
-    if let Ok(title_re) = Regex::new(r#"(?i)<meta\s+property=["']og:title["']\s+content=["']([^"']+)["']"#) {
-        if let Some(cap) = title_re.captures(&html) {
-            meta.title = Some(cap[1].trim().to_string());
-        }
-    }
-    if meta.title.is_none() {
-        if let Ok(tag_re) = Regex::new(r#"(?i)<title[^>]*>([^<]+)</title>"#) {
-            if let Some(cap) = tag_re.captures(&html) {
-                meta.title = Some(cap[1].trim().to_string());
-            }
-        }
+    // 1. Zero-heap Title extraction using static DFA
+    if let Some(cap) = RE_OG_TITLE.captures(&html) {
+        meta.title = Some(cap[1].trim().to_string());
+    } else if let Some(cap) = RE_TITLE_TAG.captures(&html) {
+        meta.title = Some(cap[1].trim().to_string());
     }
 
-    // 2. Timezone offset extraction from text (e.g. UTC -04:00, EDT, etc.)
+    // 2. Timezone offset extraction using static precompiled patterns
     let mut src_offset_secs: i32 = 0;
     let mut found_tz = false;
 
-    if let Ok(utc_re) = Regex::new(r#"UTC\s*([+-]\d{2}):?(\d{2})?"#) {
-        if let Some(cap) = utc_re.captures(&html) {
-            if let Ok(h) = cap[1].parse::<i32>() {
-                let m = cap.get(2).and_then(|v| v.as_str().parse::<i32>().ok()).unwrap_or(0);
-                src_offset_secs = h * 3600 + (if h >= 0 { m } else { -m }) * 60;
-                found_tz = true;
-            }
+    if let Some(cap) = RE_UTC_OFFSET.captures(&html) {
+        if let Ok(h) = cap[1].parse::<i32>() {
+            let m = cap.get(2).and_then(|v| v.as_str().parse::<i32>().ok()).unwrap_or(0);
+            src_offset_secs = h * 3600 + (if h >= 0 { m } else { -m }) * 60;
+            found_tz = true;
         }
     }
 
     if !found_tz {
-        let tz_map = [
-            ("EDT", -4 * 3600),
-            ("EST", -5 * 3600),
-            ("CDT", -5 * 3600),
-            ("CST", -6 * 3600),
-            ("MDT", -6 * 3600),
-            ("MST", -7 * 3600),
-            ("PDT", -7 * 3600),
-            ("PST", -8 * 3600),
-            ("IST", (5 * 3600) + (30 * 60)),
-            ("UTC", 0),
-            ("GMT", 0),
-        ];
-        for (abbr, offset) in tz_map {
-            let r = format!(r#"\b{}\b"#, abbr);
-            if Regex::new(&r).map(|re| re.is_match(&html)).unwrap_or(false) {
-                src_offset_secs = offset;
-                break;
+        if let Some(cap) = RE_TZ_ABBR.captures(&html) {
+            if let Some(m) = cap.get(1) {
+                if let Some(&(_, offset)) = TZ_MAP.iter().find(|(abbr, _)| *abbr == m.as_str()) {
+                    src_offset_secs = offset;
+                }
             }
         }
     }
@@ -102,46 +117,40 @@ async fn fetch_page_metadata(client: &reqwest::Client, url: &str) -> Option<Page
     let src_tz = FixedOffset::east_opt(src_offset_secs).unwrap_or_else(|| FixedOffset::east_opt(0).unwrap());
 
     // 3. Check for form_date value="2026-09-16T10:00:00"
-    if let Ok(form_date_re) = Regex::new(r#"<input[^>]+(?:id|name)=["'](?:form_date|event_date)["'][^>]+value=["'](\d{4}-\d{2}-\d{2}T\d{2}:\d{2}(?::\d{2})?)["']"#) {
-        if let Some(cap) = form_date_re.captures(&html) {
-            let raw_val = &cap[1];
-            let parse_format = if raw_val.len() == 16 { "%Y-%m-%dT%H:%M" } else { "%Y-%m-%dT%H:%M:%S" };
-            if let Ok(naive) = NaiveDateTime::parse_from_str(raw_val, parse_format) {
-                if let Some(src_dt) = src_tz.from_local_datetime(&naive).single() {
-                    let local_start = src_dt.with_timezone(&Local);
-                    let mut dur_mins = 30;
+    if let Some(cap) = RE_FORM_DATE.captures(&html) {
+        let raw_val = &cap[1];
+        let parse_format = if raw_val.len() == 16 { "%Y-%m-%dT%H:%M" } else { "%Y-%m-%dT%H:%M:%S" };
+        if let Ok(naive) = NaiveDateTime::parse_from_str(raw_val, parse_format) {
+            if let Some(src_dt) = src_tz.from_local_datetime(&naive).single() {
+                let local_start = src_dt.with_timezone(&Local);
+                let mut dur_mins = 30;
 
-                    if let Ok(until_re) = Regex::new(r#"(?i)until\s+(\d{1,2}:\d{2}\s*[AP]M)"#) {
-                        if let Some(ucap) = until_re.captures(&html) {
-                            let end_str = ucap[1].trim();
-                            if let Ok(end_time) = chrono::NaiveTime::parse_from_str(end_str, "%I:%M %p") {
-                                let end_naive = naive.date().and_time(end_time);
-                                if let Some(end_src) = src_tz.from_local_datetime(&end_naive).single() {
-                                    let diff = (end_src - src_dt).num_minutes();
-                                    if (5..=480).contains(&diff) {
-                                        dur_mins = diff;
-                                    }
-                                }
+                if let Some(ucap) = RE_UNTIL_TIME.captures(&html) {
+                    let end_str = ucap[1].trim();
+                    if let Ok(end_time) = chrono::NaiveTime::parse_from_str(end_str, "%I:%M %p") {
+                        let end_naive = naive.date().and_time(end_time);
+                        if let Some(end_src) = src_tz.from_local_datetime(&end_naive).single() {
+                            let diff = (end_src - src_dt).num_minutes();
+                            if (5..=480).contains(&diff) {
+                                dur_mins = diff;
                             }
                         }
                     }
-
-                    let local_end = local_start + ChronoDuration::minutes(dur_mins);
-                    meta.fixed_start = Some(local_start);
-                    meta.fixed_end = Some(local_end);
-                    meta.duration_minutes = Some(dur_mins);
                 }
+
+                let local_end = local_start + ChronoDuration::minutes(dur_mins);
+                meta.fixed_start = Some(local_start);
+                meta.fixed_end = Some(local_end);
+                meta.duration_minutes = Some(dur_mins);
             }
         }
     }
 
-    // 4. Extract description/snippet
-    if let Ok(og_desc_re) = Regex::new(r#"(?i)<meta\s+property=["']og:description["']\s+content=["']([^"']+)["']"#) {
-        if let Some(cap) = og_desc_re.captures(&html) {
-            let desc = cap[1].replace("&nbsp;", " ").replace("&#xA0;", " ").trim().to_string();
-            if !desc.is_empty() {
-                meta.description = Some(desc);
-            }
+    // 4. Extract description/snippet using static regex
+    if let Some(cap) = RE_OG_DESC.captures(&html) {
+        let desc = cap[1].replace("&nbsp;", " ").replace("&#xA0;", " ").trim().to_string();
+        if !desc.is_empty() {
+            meta.description = Some(desc);
         }
     }
 
