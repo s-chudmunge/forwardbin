@@ -71,9 +71,9 @@ class AnimatedBinWindow(Gtk.Window):
         self.set_skip_pager_hint(True)
         self.stick()
 
-        # Compact, unobtrusive canvas dimensions
-        self.canvas_w = 105
-        self.canvas_h = 130
+        # Compact, unobtrusive canvas dimensions (reduced footprint)
+        self.canvas_w = 78
+        self.canvas_h = 98
         self.set_default_size(self.canvas_w, self.canvas_h)
         self.set_size_request(self.canvas_w, self.canvas_h)
 
@@ -237,10 +237,10 @@ class AnimatedBinWindow(Gtk.Window):
                             if not self.is_processing and now > self._keep_visible_until:
                                 self.target_opacity = self.idle_opacity
 
-                    # Proximity hover: boost to 100% if mouse is within 70px of the bin
+                    # Proximity hover: boost to 100% if mouse is within 55px of the bin
                     bx, by = self.get_position()
                     dist_to_bin = math.hypot(px - (bx + self.canvas_w / 2), py - (by + self.canvas_h / 2))
-                    if dist_to_bin < 70:
+                    if dist_to_bin < 55:
                         self.target_opacity = 1.0
         except Exception:
             pass
@@ -328,8 +328,12 @@ class AnimatedBinWindow(Gtk.Window):
 
         cr.push_group()
 
-        w = self.canvas_w
-        h = self.canvas_h
+        # Responsive scaling relative to reference dimensions (105 x 130)
+        scale = self.canvas_w / 105.0
+        cr.scale(scale, scale)
+
+        w = 105.0
+        h = 130.0
         cx = w / 2.0
 
         # Compact Bin Geometry Parameters
@@ -622,7 +626,7 @@ class AnimatedBinWindow(Gtk.Window):
 
     def spawn_burst_particles(self, count: int, color: tuple):
         self.wake_up_high_fps()
-        cx = self.canvas_w / 2.0
+        cx = 105.0 / 2.0
         cy = 48.0
         for _ in range(count):
             vx = random.uniform(-25, 25)

@@ -30,8 +30,8 @@ class MacOSFloatingBin:
         except Exception:
             pass
 
-        # Dimensions & Screen Placement (Bottom-Right corner)
-        self.size = 110
+        # Dimensions & Screen Placement (Bottom-Right corner, compact size)
+        self.size = 84
         sw = self.root.winfo_screenwidth()
         sh = self.root.winfo_screenheight()
         self.x = sw - self.size - 40
