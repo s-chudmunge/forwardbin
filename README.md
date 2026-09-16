@@ -1,8 +1,8 @@
 <p align="center">
-  <img src="assets/forwardbin.svg" alt="ForwardBin Jarvis Logo" width="100" height="100" />
+  <img src="assets/forwardbin.svg" alt="ForwardBin Logo" width="84" height="84" />
 </p>
 
-<h1 align="center">⚡ ForwardBin Jarvis</h1>
+<h1 align="center">ForwardBin Jarvis</h1>
 
 <p align="center">
   <strong>Your Intelligent Desktop Drop Bin & AI-Powered Calendar Slot Scheduler</strong><br>
