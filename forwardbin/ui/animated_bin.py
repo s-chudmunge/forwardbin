@@ -784,30 +784,146 @@ class AnimatedBinWindow(Gtk.Window):
 
     def create_dashboard_window(self):
         self.dashboard_window = Gtk.Window(type=Gtk.WindowType.TOPLEVEL)
-        self.dashboard_window.set_title("Jarvis Queue")
+        self.dashboard_window.set_title("ForwardBin Queue")
         self.dashboard_window.set_keep_above(True)
         self.dashboard_window.set_decorated(False)
         self.dashboard_window.set_skip_taskbar_hint(True)
-        self.dashboard_window.set_default_size(340, 360)
+        self.dashboard_window.set_default_size(360, 390)
+        self.dashboard_window.get_style_context().add_class("dash-window")
 
-        # Style with dark CSS
+        # Style with clean, high-contrast light CSS
         css = b"""
-        window {
-            background-color: #0d1117;
-            border: 1px solid rgba(217, 119, 87, 0.45);
-            border-radius: 12px;
+        window.dash-window {
+            background-color: #ffffff;
+            border: 1.5px solid rgba(217, 119, 87, 0.55);
+            border-radius: 14px;
         }
+
+        scrolledwindow, scrolledwindow viewport {
+            background-color: transparent;
+            border: none;
+        }
+
         .header-title {
-            color: #D97757;
-            font-weight: 700;
+            color: #C15F3E;
+            font-weight: 800;
             font-size: 14px;
+            letter-spacing: 0.3px;
         }
+
+        .close-btn {
+            color: #64748b;
+            font-size: 13px;
+            font-weight: bold;
+            border: none;
+            background: transparent;
+            padding: 2px 6px;
+            border-radius: 6px;
+        }
+        .close-btn:hover {
+            color: #0f172a;
+            background-color: #f1f5f9;
+        }
+
+        entry.dash-input {
+            background-color: #f8fafc;
+            background-image: none;
+            color: #0f172a;
+            border: 1.5px solid #cbd5e1;
+            border-radius: 8px;
+            padding: 6px 10px;
+            font-size: 12px;
+        }
+        entry.dash-input:focus {
+            background-color: #ffffff;
+            border-color: #D97757;
+        }
+
+        button.add-btn {
+            background-color: #D97757;
+            background-image: none;
+            color: #ffffff;
+            font-weight: 700;
+            font-size: 12px;
+            border: none;
+            border-radius: 8px;
+            padding: 6px 16px;
+        }
+        button.add-btn:hover {
+            background-color: #c45d3b;
+        }
+
         .card-row {
-            background: #161b22;
-            border: 1px solid #30363d;
+            background-color: #f8fafc;
+            border: 1px solid #e2e8f0;
             border-radius: 8px;
             padding: 8px 10px;
-            margin-bottom: 6px;
+            margin-bottom: 5px;
+        }
+        .card-row:hover {
+            background-color: #f1f5f9;
+            border-color: #cbd5e1;
+        }
+
+        .item-title {
+            color: #0f172a;
+            font-weight: 700;
+            font-size: 12px;
+        }
+
+        .badge-video {
+            background-color: #ffedd5;
+            background-image: none;
+            color: #c2410c;
+            font-weight: 800;
+            font-size: 10px;
+            padding: 2px 6px;
+            border-radius: 4px;
+        }
+
+        .badge-paper {
+            background-color: #ede9fe;
+            background-image: none;
+            color: #6d28d9;
+            font-weight: 800;
+            font-size: 10px;
+            padding: 2px 6px;
+            border-radius: 4px;
+        }
+
+        .badge-event {
+            background-color: #e0f2fe;
+            background-image: none;
+            color: #0369a1;
+            font-weight: 800;
+            font-size: 10px;
+            padding: 2px 6px;
+            border-radius: 4px;
+        }
+
+        .badge-article {
+            background-color: #fef3c7;
+            background-image: none;
+            color: #b45309;
+            font-weight: 800;
+            font-size: 10px;
+            padding: 2px 6px;
+            border-radius: 4px;
+        }
+
+        button.open-btn {
+            background-color: #ffffff;
+            background-image: none;
+            color: #D97757;
+            border: 1.5px solid #D97757;
+            font-weight: 700;
+            font-size: 11px;
+            border-radius: 6px;
+            padding: 2px 8px;
+        }
+        button.open-btn:hover {
+            background-color: #D97757;
+            color: #ffffff;
         }
         """
         provider = Gtk.CssProvider()
@@ -829,6 +945,7 @@ class AnimatedBinWindow(Gtk.Window):
 
         close_btn = Gtk.Button(label="✕")
         close_btn.set_relief(Gtk.ReliefStyle.NONE)
+        close_btn.get_style_context().add_class("close-btn")
         close_btn.connect("clicked", lambda b: self.dashboard_window.hide())
         h_row.pack_end(close_btn, False, False, 0)
         vbox.pack_start(h_row, False, False, 0)
@@ -836,11 +953,13 @@ class AnimatedBinWindow(Gtk.Window):
         # Quick Add entry
         entry_box = Gtk.Box(orientation=Gtk.Orientation.HORIZONTAL, spacing=6)
         self.dash_entry = Gtk.Entry()
+        self.dash_entry.get_style_context().add_class("dash-input")
         self.dash_entry.set_placeholder_text("Paste link & press Enter...")
         self.dash_entry.connect("activate", self.on_dash_manual_submit)
         entry_box.pack_start(self.dash_entry, True, True, 0)
 
         sub_btn = Gtk.Button(label="Add")
+        sub_btn.get_style_context().add_class("add-btn")
         sub_btn.connect("clicked", self.on_dash_manual_submit)
         entry_box.pack_start(sub_btn, False, False, 0)
         vbox.pack_start(entry_box, False, False, 0)
@@ -855,7 +974,7 @@ class AnimatedBinWindow(Gtk.Window):
 
         # Footer
         cfg = load_config()
-        footer = Gtk.Label(label=f"<small style='color:#8b949e;'>Email: {cfg.get('user_email')} | Super+Shift+F</small>")
+        footer = Gtk.Label(label=f"<span foreground='#64748b' size='small'>Email: {cfg.get('user_email')} | Super+Shift+F</span>")
         footer.set_use_markup(True)
         vbox.pack_start(footer, False, False, 0)
 
@@ -873,20 +992,23 @@ class AnimatedBinWindow(Gtk.Window):
 
         items = list_items(status="scheduled", limit=10)
         if not items:
-            lbl = Gtk.Label(label="<small style='color:#8b949e;'>No items in queue.</small>")
+            lbl = Gtk.Label(label="<span foreground='#64748b' size='small'>Your forward queue is currently empty.</span>")
             lbl.set_use_markup(True)
             self.dash_queue_box.pack_start(lbl, True, True, 20)
         else:
             for it in items:
-                row = Gtk.Box(orientation=Gtk.Orientation.VERTICAL, spacing=2)
+                row = Gtk.Box(orientation=Gtk.Orientation.VERTICAL, spacing=3)
                 row.get_style_context().add_class("card-row")
 
                 top = Gtk.Box(orientation=Gtk.Orientation.HORIZONTAL, spacing=6)
-                badge_lbl = Gtk.Label(label=f"<b>[{it.get('content_type', 'item').upper()}]</b>")
-                badge_lbl.set_use_markup(True)
+                badge_type = it.get("content_type", "item").lower()
+                badge_lbl = Gtk.Label(label=f"[{badge_type.upper()}]")
+                badge_class = f"badge-{badge_type}" if badge_type in ["video", "paper", "event", "article"] else "badge-article"
+                badge_lbl.get_style_context().add_class(badge_class)
                 top.pack_start(badge_lbl, False, False, 0)
 
-                t = Gtk.Label(label=it.get("title", "Item")[:32])
+                t = Gtk.Label(label=it.get("title", "Item")[:36])
+                t.get_style_context().add_class("item-title")
                 t.set_xalign(0)
                 t.set_ellipsize(Pango.EllipsizeMode.END)
                 top.pack_start(t, True, True, 0)
@@ -898,14 +1020,14 @@ class AnimatedBinWindow(Gtk.Window):
                     dt_str = dt.strftime("%b %d, %I:%M %p")
                 except Exception:
                     dt_str = "Scheduled"
-                time_lbl = Gtk.Label(label=f"<small style='color:#8b949e;'>📅 {dt_str} ({it.get('duration_minutes', 30)}m)</small>")
+                time_lbl = Gtk.Label(label=f"<span foreground='#64748b' size='small'>📅 {dt_str} ({it.get('duration_minutes', 30)}m)</span>")
                 time_lbl.set_use_markup(True)
                 time_lbl.set_xalign(0)
                 sub.pack_start(time_lbl, True, True, 0)
 
                 if it.get("url"):
-                    open_btn = Gtk.Button(label="Open")
-                    open_btn.set_relief(Gtk.ReliefStyle.NONE)
+                    open_btn = Gtk.Button(label="Open ↗")
+                    open_btn.get_style_context().add_class("open-btn")
                     u = it["url"]
                     open_btn.connect("clicked", lambda b, target_url=u: os.system(f"xdg-open '{target_url}' &"))
                     sub.pack_end(open_btn, False, False, 0)
