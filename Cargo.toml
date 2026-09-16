@@ -1,0 +1,27 @@
+[package]
+name = "forwardbin"
+version = "1.0.0"
+edition = "2021"
+authors = ["ForwardBin Contributors"]
+description = "Your Linux Jarvis drop bin: AI-powered scheduling, slot reservation, and email alerts."
+
+[dependencies]
+# Async runtime & Networking (Pure Rust TLS, zero libssl needed)
+tokio = { version = "1", features = ["full"] }
+reqwest = { version = "0.12", default-features = false, features = ["rustls-tls", "json"] }
+serde = { version = "1", features = ["derive"] }
+serde_json = "1"
+
+# Database (Bundled SQLite, zero sqlite3-devel needed)
+rusqlite = { version = "0.32", features = ["bundled"] }
+
+# CLI & Environment
+clap = { version = "4", features = ["derive"] }
+chrono = { version = "0.4", features = ["serde"] }
+dirs = "5"
+url = "2"
+regex = "1"
+
+# UI & Graphics (100% Pure Rust, zero C-devel headers needed!)
+tiny-skia = "0.11"
+x11rb = { version = "0.13", features = ["all-extensions"] }

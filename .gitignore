@@ -1,0 +1,38 @@
+# Byte-compiled / optimized / DLL files
+__pycache__/
+*.py[cod]
+*$py.class
+
+# Rust artifacts
+target/
+*.rs.bk
+
+# Environments & Packages
+.env
+.env.*
+!.env.example
+env/
+venv/
+.venv/
+build/
+dist/
+*.egg-info/
+
+# ForwardBin Local User Data & Caches
+*.db
+*.sqlite
+*.sqlite3
+*.ics
+config.json
+
+# Testing & Coverage
+.pytest_cache/
+.coverage
+htmlcov/
+
+# Editor / OS settings
+.DS_Store
+.idea/
+.vscode/
+*.swp
+*~

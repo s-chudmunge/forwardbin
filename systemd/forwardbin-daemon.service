@@ -1,0 +1,16 @@
+[Unit]
+Description=ForwardBin Jarvis Background Notification & Email Daemon (Rust Native)
+After=network.target
+
+[Service]
+Type=simple
+ExecStart=/home/sankalp/.local/bin/forwardbin daemon
+Restart=on-failure
+RestartSec=10
+Nice=15
+CPUWeight=20
+MemoryHigh=60M
+MemoryMax=120M
+
+[Install]
+WantedBy=default.target

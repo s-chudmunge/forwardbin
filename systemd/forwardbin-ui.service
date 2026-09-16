@@ -1,0 +1,18 @@
+[Unit]
+Description=ForwardBin Jarvis Animated Drop Bin (GTK3 / Cairo)
+After=graphical-session.target
+
+[Service]
+Type=simple
+ExecStart=/home/sankalp/.local/bin/forwardbin ui
+Restart=always
+RestartSec=2
+Environment=GDK_BACKEND=x11
+Environment=PYTHONUNBUFFERED=1
+Nice=10
+CPUWeight=50
+MemoryHigh=100M
+MemoryMax=180M
+
+[Install]
+WantedBy=default.target

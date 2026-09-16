@@ -1,0 +1,28 @@
+#!/usr/bin/env bash
+# ForwardBin Hybrid Launcher (Rust Core + GTK3/Cairo Animated UI)
+set -e
+
+DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
+# Try local target directory or standard project path
+if [ -f "$DIR/../target/release/forwardbin" ]; then
+    RUST_BIN="$DIR/../target/release/forwardbin"
+elif [ -f "/home/sankalp/projects/forwardbin/target/release/forwardbin" ]; then
+    RUST_BIN="/home/sankalp/projects/forwardbin/target/release/forwardbin"
+elif [ -f "/home/sankalp/projects/forwardbin-rs/target/release/forwardbin" ]; then
+    RUST_BIN="/home/sankalp/projects/forwardbin-rs/target/release/forwardbin"
+else
+    echo "❌ Error: ForwardBin Rust binary not found. Run 'make build' or 'cargo build --release'."
+    exit 1
+fi
+
+PROJECT_DIR="/home/sankalp/projects/forwardbin"
+
+# If the command is "ui" (or no argument is given), launch the rich Cairo/GTK3 floating UI
+if [ "$1" = "ui" ] || [ -z "$1" ]; then
+    export PYTHONPATH="$PROJECT_DIR:$PYTHONPATH"
+    export GDK_BACKEND=x11
+    exec python3 -m forwardbin.cli ui
+else
+    # All CLI subcommands and background daemon run through high-speed native Rust
+    exec "$RUST_BIN" "$@"
+fi
