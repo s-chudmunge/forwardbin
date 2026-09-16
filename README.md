@@ -132,7 +132,7 @@ brew install rust python3
 ### 2. Install ForwardBin
 
 ```bash
-git clone https://github.com/your-username/forwardbin.git
+git clone https://github.com/s-chudmunge/forwardbin.git
 cd forwardbin
 
 # Run the universal installer
