@@ -3,27 +3,34 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>ForwardBin Jarvis — Desktop Drop Bin & AI Calendar Slot Scheduler</title>
-  <meta name="description" content="A lightweight native desktop drop bin for Linux and macOS that turns saved papers, videos, and webinars into real calendar focus slots. Written in Rust.">
+  <title>ForwardBin — The Desktop Drop Bin That Schedules Your Reading</title>
+  <meta name="description" content="A lightweight native desktop drop bin in Rust that turns saved YouTube lectures, arXiv papers, and webinars into real calendar focus slots.">
   <link rel="icon" type="image/svg+xml" href="logo.svg">
 
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=JetBrains+Mono:wght@400;500;600&display=swap" rel="stylesheet">
+  <link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@400;500;600;700&family=Space+Mono:ital,wght@0,400;0,700;1,400&family=Inter:wght@400;500;600&display=swap" rel="stylesheet">
 
   <style>
+    /* -------------------------------------------------------------
+       Drastic Minimalist Light / Editorial Industrial Aesthetic
+       Inspired by Dieter Rams, Teenage Engineering & Swiss Typography
+       ------------------------------------------------------------- */
     :root {
-      --bg: #0b0f10;
-      --bg-card: #131819;
-      --bg-card-hover: #182021;
-      --border: rgba(255, 255, 255, 0.08);
-      --border-accent: rgba(217, 119, 87, 0.35);
-      --text: #f0f3f3;
-      --text-muted: #8b999a;
-      --accent: #d97757;
-      --accent-glow: rgba(217, 119, 87, 0.15);
-      --code-bg: #07090a;
-      --radius: 12px;
+      --paper: #F7F6F2;
+      --paper-card: #FFFFFF;
+      --paper-sunken: #EFECE5;
+      --rule: #DDD9CF;
+      --rule-dark: #C2BDAF;
+      --ink: #141311;
+      --ink-muted: #615E57;
+      --ink-faint: #918D83;
+      --terracotta: #D97757;
+      --terracotta-tint: rgba(217, 119, 87, 0.12);
+      --green: #1B8A5A;
+      --font-display: 'Space Grotesk', -apple-system, sans-serif;
+      --font-body: 'Inter', -apple-system, sans-serif;
+      --font-mono: 'Space Mono', monospace;
     }
 
     * {
@@ -33,637 +40,950 @@
     }
 
     body {
-      background-color: var(--bg);
-      color: var(--text);
-      font-family: 'Inter', -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
-      line-height: 1.55;
-      font-size: 16px;
+      background-color: var(--paper);
+      color: var(--ink);
+      font-family: var(--font-body);
+      font-size: 15px;
+      line-height: 1.6;
       -webkit-font-smoothing: antialiased;
-      overflow-x: hidden;
     }
 
-    /* Ambient background gradient */
-    .ambient-glow {
-      position: absolute;
-      top: -120px;
-      left: 50%;
-      transform: translateX(-50%);
-      width: 760px;
-      height: 480px;
-      background: radial-gradient(circle, rgba(217, 119, 87, 0.12) 0%, rgba(11, 15, 16, 0) 70%);
-      pointer-events: none;
-      z-index: 0;
-    }
-
-    .container {
-      max-width: 980px;
+    /* Architectural Frame Layout */
+    .outer-frame {
+      max-width: 1160px;
       margin: 0 auto;
-      padding: 0 24px;
-      position: relative;
-      z-index: 1;
+      border-left: 1px solid var(--rule);
+      border-right: 1px solid var(--rule);
+      min-height: 100vh;
+      display: flex;
+      flex-direction: column;
+      background: var(--paper);
     }
 
-    /* Header */
-    header {
-      padding: 24px 0;
-      border-bottom: 1px solid var(--border);
-    }
-
-    .nav-wrap {
+    /* Top Spec Bar */
+    .spec-header {
       display: flex;
       align-items: center;
       justify-content: space-between;
-    }
-
-    .brand {
-      display: flex;
-      align-items: center;
-      gap: 12px;
-      text-decoration: none;
-      color: var(--text);
-    }
-
-    .brand-logo {
-      width: 32px;
-      height: 32px;
-      display: block;
-    }
-
-    .brand-title {
-      font-weight: 700;
-      font-size: 18px;
-      letter-spacing: -0.02em;
-    }
-
-    .nav-links {
-      display: flex;
-      align-items: center;
-      gap: 16px;
-    }
-
-    .nav-link {
-      color: var(--text-muted);
-      text-decoration: none;
-      font-size: 14px;
-      font-weight: 500;
-      transition: color 0.2s;
-    }
-    .nav-link:hover {
-      color: var(--text);
-    }
-
-    .btn-github {
-      display: inline-flex;
-      align-items: center;
-      gap: 8px;
-      padding: 7px 14px;
-      background: rgba(255, 255, 255, 0.05);
-      border: 1px solid var(--border);
-      border-radius: 8px;
-      color: var(--text);
-      font-size: 13px;
-      font-weight: 600;
-      text-decoration: none;
-      transition: all 0.2s;
-    }
-    .btn-github:hover {
-      background: rgba(255, 255, 255, 0.1);
-      border-color: var(--border-accent);
-    }
-
-    /* Hero */
-    .hero {
-      padding: 72px 0 48px;
-      text-align: center;
-    }
-
-    .badge {
-      display: inline-flex;
-      align-items: center;
-      gap: 8px;
-      padding: 4px 12px;
-      background: var(--accent-glow);
-      border: 1px solid var(--border-accent);
-      border-radius: 9999px;
+      padding: 18px 28px;
+      border-bottom: 1px solid var(--rule);
+      background: var(--paper);
+      font-family: var(--font-mono);
       font-size: 12px;
-      font-weight: 600;
-      color: var(--accent);
-      margin-bottom: 24px;
-      letter-spacing: 0.02em;
+      letter-spacing: -0.01em;
+    }
+
+    .brand-mark {
+      display: flex;
+      align-items: center;
+      gap: 14px;
+      text-decoration: none;
+      color: var(--ink);
+    }
+
+    .brand-mark svg {
+      width: 28px;
+      height: 28px;
+      flex-shrink: 0;
+    }
+
+    .brand-tagline {
+      display: flex;
+      flex-direction: column;
+      line-height: 1.2;
+    }
+
+    .brand-name {
+      font-weight: 700;
+      font-size: 14px;
+      letter-spacing: 0.05em;
+      text-transform: uppercase;
+    }
+
+    .brand-sub {
+      color: var(--ink-faint);
+      font-size: 11px;
+    }
+
+    .status-badge {
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+      padding: 4px 10px;
+      background: var(--paper-card);
+      border: 1px solid var(--rule);
+      border-radius: 4px;
+      font-size: 11px;
+      color: var(--ink-muted);
+    }
+
+    .status-dot {
+      width: 6px;
+      height: 6px;
+      background: var(--green);
+      border-radius: 50%;
+      box-shadow: 0 0 0 2px rgba(27, 138, 90, 0.2);
+    }
+
+    .header-links {
+      display: flex;
+      align-items: center;
+      gap: 18px;
+    }
+
+    .header-links a {
+      color: var(--ink-muted);
+      text-decoration: none;
+      font-weight: 500;
+      transition: color 0.15s;
+    }
+    .header-links a:hover {
+      color: var(--terracotta);
+    }
+
+    /* Hero Section: Asymmetric Split Grid */
+    .hero-split {
+      display: grid;
+      grid-template-columns: 1.25fr 1fr;
+      border-bottom: 1px solid var(--rule);
+    }
+
+    .hero-main {
+      padding: 64px 44px;
+      border-right: 1px solid var(--rule);
+      display: flex;
+      flex-direction: column;
+      justify-content: center;
+    }
+
+    .eyebrow {
+      font-family: var(--font-mono);
+      font-size: 11px;
+      font-weight: 700;
+      letter-spacing: 0.12em;
+      text-transform: uppercase;
+      color: var(--terracotta);
+      margin-bottom: 20px;
     }
 
     h1 {
-      font-size: 46px;
-      font-weight: 800;
-      line-height: 1.15;
+      font-family: var(--font-display);
+      font-size: 44px;
+      font-weight: 700;
+      line-height: 1.12;
       letter-spacing: -0.035em;
-      max-width: 780px;
-      margin: 0 auto 20px;
+      color: var(--ink);
+      margin-bottom: 24px;
     }
 
-    .hero-sub {
-      font-size: 18px;
-      color: var(--text-muted);
-      max-width: 660px;
-      margin: 0 auto 36px;
-      line-height: 1.6;
+    h1 span.terracotta-text {
+      color: var(--terracotta);
     }
 
-    .hero-actions {
+    .hero-lead {
+      font-size: 16px;
+      line-height: 1.65;
+      color: var(--ink-muted);
+      margin-bottom: 36px;
+      max-width: 540px;
+    }
+
+    /* Terminal Slip Box */
+    .terminal-slip {
+      background: var(--paper-card);
+      border: 1px solid var(--rule-dark);
+      border-radius: 4px;
+      padding: 14px 18px;
+      margin-bottom: 24px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 12px;
+      box-shadow: 2px 2px 0px rgba(0, 0, 0, 0.04);
+    }
+
+    .terminal-code {
+      font-family: var(--font-mono);
+      font-size: 12.5px;
+      color: var(--ink);
+      overflow-x: auto;
+      white-space: nowrap;
+      scrollbar-width: none;
+    }
+    .terminal-code::-webkit-scrollbar { display: none; }
+    .term-prompt { color: var(--terracotta); user-select: none; font-weight: 700; margin-right: 8px; }
+
+    .copy-btn {
+      font-family: var(--font-mono);
+      font-size: 11px;
+      padding: 5px 12px;
+      background: var(--paper-sunken);
+      border: 1px solid var(--rule);
+      border-radius: 3px;
+      color: var(--ink);
+      cursor: pointer;
+      font-weight: 700;
+      text-transform: uppercase;
+      letter-spacing: 0.05em;
+      transition: all 0.15s;
+      flex-shrink: 0;
+    }
+    .copy-btn:hover {
+      background: var(--terracotta);
+      color: #FFFFFF;
+      border-color: var(--terracotta);
+    }
+
+    .hero-cta-row {
       display: flex;
       flex-wrap: wrap;
       align-items: center;
-      justify-content: center;
-      gap: 14px;
-      margin-bottom: 40px;
+      gap: 12px;
     }
 
-    .btn-primary {
+    .btn-action {
       display: inline-flex;
       align-items: center;
       gap: 8px;
-      padding: 12px 24px;
-      background: var(--accent);
-      color: #fff;
-      border: none;
-      border-radius: 8px;
-      font-size: 15px;
-      font-weight: 600;
+      padding: 11px 20px;
+      background: var(--terracotta);
+      color: #FFFFFF;
+      border: 1px solid var(--terracotta);
+      border-radius: 4px;
+      font-family: var(--font-mono);
+      font-size: 12px;
+      font-weight: 700;
+      text-transform: uppercase;
+      letter-spacing: 0.05em;
       text-decoration: none;
-      transition: all 0.2s ease;
-      box-shadow: 0 4px 18px rgba(217, 119, 87, 0.35);
+      box-shadow: 2px 2px 0px #974026;
+      transition: all 0.1s;
     }
-    .btn-primary:hover {
-      background: #e28263;
-      transform: translateY(-1px);
+    .btn-action:hover {
+      transform: translate(-1px, -1px);
+      box-shadow: 3px 3px 0px #974026;
+    }
+    .btn-action:active {
+      transform: translate(1px, 1px);
+      box-shadow: 1px 1px 0px #974026;
     }
 
     .btn-secondary {
       display: inline-flex;
       align-items: center;
       gap: 8px;
-      padding: 12px 22px;
-      background: var(--bg-card);
-      border: 1px solid var(--border);
-      border-radius: 8px;
-      color: var(--text);
-      font-size: 15px;
-      font-weight: 600;
+      padding: 11px 18px;
+      background: var(--paper-card);
+      color: var(--ink);
+      border: 1px solid var(--rule-dark);
+      border-radius: 4px;
+      font-family: var(--font-mono);
+      font-size: 12px;
+      font-weight: 700;
+      text-transform: uppercase;
+      letter-spacing: 0.05em;
       text-decoration: none;
-      transition: all 0.2s ease;
+      box-shadow: 2px 2px 0px rgba(0, 0, 0, 0.05);
+      transition: all 0.15s;
     }
     .btn-secondary:hover {
-      border-color: var(--border-accent);
-      background: var(--bg-card-hover);
+      border-color: var(--ink);
     }
 
-    /* Terminal Curl Command */
-    .cli-box {
-      max-width: 620px;
-      margin: 0 auto;
-      background: var(--code-bg);
-      border: 1px solid var(--border);
-      border-radius: 10px;
-      padding: 14px 18px;
+    /* Right Column: Interactive Drop Simulator */
+    .hero-interactive {
+      background: var(--paper-card);
+      padding: 44px 36px;
+      display: flex;
+      flex-direction: column;
+      justify-content: space-between;
+      position: relative;
+    }
+
+    .interactive-header {
       display: flex;
       align-items: center;
       justify-content: space-between;
-      gap: 12px;
-      text-align: left;
+      margin-bottom: 24px;
+      border-bottom: 1px dashed var(--rule);
+      padding-bottom: 12px;
     }
 
-    .cli-content {
-      font-family: 'JetBrains Mono', monospace;
-      font-size: 13px;
-      color: #c0cfcf;
-      overflow-x: auto;
-      white-space: nowrap;
-      scrollbar-width: none;
-    }
-    .cli-content::-webkit-scrollbar { display: none; }
-    .cli-prompt { color: var(--accent); user-select: none; margin-right: 6px; }
-
-    .copy-btn {
-      background: rgba(255, 255, 255, 0.08);
-      border: 1px solid var(--border);
-      color: var(--text-muted);
-      padding: 6px 12px;
-      border-radius: 6px;
-      font-size: 12px;
-      font-family: inherit;
-      font-weight: 500;
-      cursor: pointer;
-      transition: all 0.2s;
-      flex-shrink: 0;
-    }
-    .copy-btn:hover {
-      color: var(--text);
-      background: rgba(255, 255, 255, 0.15);
+    .sim-tag {
+      font-family: var(--font-mono);
+      font-size: 11px;
+      font-weight: 700;
+      text-transform: uppercase;
+      letter-spacing: 0.08em;
+      color: var(--ink-faint);
     }
 
-    /* Visual Previews */
-    .preview-grid {
-      display: grid;
-      grid-template-columns: 1fr 1fr;
-      gap: 20px;
-      margin: 54px 0;
-    }
-
-    .preview-card {
-      background: var(--bg-card);
-      border: 1px solid var(--border);
-      border-radius: var(--radius);
-      padding: 24px;
+    .interactive-stage {
+      flex: 1;
       display: flex;
-      flex-col: column;
       flex-direction: column;
-      justify-content: space-between;
-      transition: border-color 0.2s;
-    }
-    .preview-card:hover {
-      border-color: var(--border-accent);
+      align-items: center;
+      justify-content: center;
+      position: relative;
+      padding: 20px 0;
     }
 
-    .preview-img-wrap {
-      background: rgba(0, 0, 0, 0.3);
-      border-radius: 8px;
-      padding: 16px;
+    /* Live Interactive SVG Bin */
+    .bin-dropzone {
+      position: relative;
+      width: 140px;
+      height: 160px;
+      cursor: pointer;
       display: flex;
       align-items: center;
       justify-content: center;
-      min-height: 180px;
-      margin-bottom: 16px;
-      border: 1px solid rgba(255, 255, 255, 0.04);
+      transition: transform 0.2s cubic-bezier(0.34, 1.56, 0.64, 1);
+    }
+    .bin-dropzone.drag-over {
+      transform: scale(1.1);
     }
 
-    .preview-img {
+    .bin-speech-bubble {
+      position: absolute;
+      top: -16px;
+      background: var(--ink);
+      color: #FFF;
+      font-family: var(--font-mono);
+      font-size: 10px;
+      font-weight: 700;
+      padding: 3px 8px;
+      border-radius: 4px;
+      letter-spacing: 0.05em;
+      text-transform: uppercase;
+      transition: all 0.2s;
+    }
+    .bin-dropzone.drag-over .bin-speech-bubble {
+      background: var(--terracotta);
+    }
+
+    .bin-img-art {
+      width: 105px;
+      height: 130px;
+      object-fit: contain;
+      filter: drop-shadow(0 14px 18px rgba(0,0,0,0.12));
+    }
+
+    /* Draggable Resource Chips */
+    .chips-label {
+      font-family: var(--font-mono);
+      font-size: 11px;
+      color: var(--ink-muted);
+      margin-bottom: 8px;
+      align-self: flex-start;
+      text-transform: uppercase;
+      letter-spacing: 0.05em;
+    }
+
+    .draggable-chips {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 8px;
+      margin-bottom: 16px;
+      width: 100%;
+    }
+
+    .chip-item {
+      background: var(--paper-sunken);
+      border: 1px solid var(--rule-dark);
+      padding: 7px 12px;
+      border-radius: 4px;
+      font-size: 12px;
+      font-weight: 500;
+      color: var(--ink);
+      cursor: grab;
+      user-select: none;
+      transition: all 0.15s;
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+    }
+    .chip-item:hover {
+      background: var(--paper-card);
+      border-color: var(--terracotta);
+      transform: translateY(-1px);
+    }
+    .chip-item:active {
+      cursor: grabbing;
+    }
+    .chip-item.dropped {
+      opacity: 0.35;
+      text-decoration: line-through;
+      pointer-events: none;
+    }
+
+    /* Live Output Simulation Feed */
+    .sim-terminal-log {
+      width: 100%;
+      background: var(--paper-sunken);
+      border: 1px solid var(--rule);
+      border-radius: 4px;
+      padding: 10px 14px;
+      font-family: var(--font-mono);
+      font-size: 11px;
+      min-height: 48px;
+      display: flex;
+      align-items: center;
+      color: var(--ink-muted);
+    }
+    .sim-terminal-log.success {
+      color: var(--green);
+      background: rgba(27, 138, 90, 0.08);
+      border-color: rgba(27, 138, 90, 0.3);
+    }
+
+    /* System Specification Grid (Architectural Ledger) */
+    .spec-grid {
+      display: grid;
+      grid-template-columns: repeat(4, 1fr);
+      border-bottom: 1px solid var(--rule);
+      background: var(--paper);
+    }
+
+    .spec-cell {
+      padding: 32px 28px;
+      border-right: 1px solid var(--rule);
+    }
+    .spec-cell:last-child {
+      border-right: none;
+    }
+
+    .spec-metric {
+      font-family: var(--font-display);
+      font-size: 38px;
+      font-weight: 700;
+      line-height: 1;
+      color: var(--ink);
+      margin-bottom: 8px;
+      letter-spacing: -0.03em;
+    }
+    .spec-metric.accent {
+      color: var(--terracotta);
+    }
+
+    .spec-title {
+      font-family: var(--font-mono);
+      font-size: 11px;
+      font-weight: 700;
+      text-transform: uppercase;
+      letter-spacing: 0.08em;
+      color: var(--ink-muted);
+      margin-bottom: 6px;
+    }
+
+    .spec-desc {
+      font-size: 13px;
+      color: var(--ink-muted);
+      line-height: 1.5;
+    }
+
+    /* 3-Step Execution Ledger */
+    .protocol-header {
+      padding: 40px 28px 20px;
+      border-bottom: 1px solid var(--rule);
+      display: flex;
+      align-items: flex-end;
+      justify-content: space-between;
+    }
+
+    .protocol-title {
+      font-family: var(--font-display);
+      font-size: 26px;
+      font-weight: 700;
+      letter-spacing: -0.02em;
+    }
+
+    .protocol-grid {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      border-bottom: 1px solid var(--rule);
+      background: var(--paper-card);
+    }
+
+    .protocol-column {
+      padding: 36px 28px;
+      border-right: 1px solid var(--rule);
+    }
+    .protocol-column:last-child {
+      border-right: none;
+    }
+
+    .step-badge {
+      font-family: var(--font-mono);
+      font-size: 11px;
+      font-weight: 700;
+      color: var(--terracotta);
+      background: var(--terracotta-tint);
+      padding: 3px 8px;
+      border-radius: 3px;
+      display: inline-block;
+      margin-bottom: 16px;
+    }
+
+    .protocol-col-title {
+      font-family: var(--font-display);
+      font-size: 18px;
+      font-weight: 700;
+      margin-bottom: 10px;
+      letter-spacing: -0.01em;
+    }
+
+    .protocol-col-body {
+      font-size: 13.5px;
+      color: var(--ink-muted);
+      line-height: 1.6;
+    }
+
+    /* Visual Previews Strip */
+    .visual-strip {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      border-bottom: 1px solid var(--rule);
+      background: var(--paper);
+    }
+
+    .visual-pane {
+      padding: 36px 28px;
+      border-right: 1px solid var(--rule);
+      display: flex;
+      flex-direction: column;
+      justify-content: space-between;
+    }
+    .visual-pane:last-child {
+      border-right: none;
+    }
+
+    .preview-canvas {
+      background: var(--paper-card);
+      border: 1px solid var(--rule);
+      border-radius: 4px;
+      padding: 24px;
+      min-height: 200px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      margin-bottom: 16px;
+    }
+
+    .preview-canvas img {
       max-width: 100%;
       height: auto;
       max-height: 160px;
       object-fit: contain;
-      filter: drop-shadow(0 8px 24px rgba(0,0,0,0.5));
     }
 
-    .preview-title {
+    .pane-title {
+      font-family: var(--font-display);
       font-size: 16px;
       font-weight: 700;
-      margin-bottom: 6px;
-      letter-spacing: -0.01em;
-    }
-
-    .preview-desc {
-      font-size: 13px;
-      color: var(--text-muted);
-      line-height: 1.5;
-    }
-
-    /* Metrics Strip */
-    .metrics-strip {
-      display: grid;
-      grid-template-columns: repeat(4, 1fr);
-      gap: 16px;
-      margin: 48px 0;
-      padding: 24px 0;
-      border-top: 1px solid var(--border);
-      border-bottom: 1px solid var(--border);
-    }
-
-    .metric-item {
-      text-align: center;
-    }
-
-    .metric-val {
-      font-family: 'JetBrains Mono', monospace;
-      font-size: 26px;
-      font-weight: 700;
-      color: var(--accent);
       margin-bottom: 4px;
     }
-
-    .metric-label {
-      font-size: 12px;
-      font-weight: 600;
-      text-transform: uppercase;
-      letter-spacing: 0.05em;
-      color: var(--text-muted);
-    }
-
-    /* How It Works Steps */
-    .section-heading {
-      text-align: center;
-      margin: 64px 0 32px;
-    }
-    .section-title {
-      font-size: 28px;
-      font-weight: 800;
-      letter-spacing: -0.02em;
-      margin-bottom: 8px;
-    }
-    .section-sub {
-      color: var(--text-muted);
-      font-size: 15px;
-    }
-
-    .steps-grid {
-      display: grid;
-      grid-template-columns: repeat(3, 1fr);
-      gap: 20px;
-      margin-bottom: 64px;
-    }
-
-    .step-card {
-      background: var(--bg-card);
-      border: 1px solid var(--border);
-      border-radius: var(--radius);
-      padding: 24px;
-    }
-
-    .step-num {
-      font-family: 'JetBrains Mono', monospace;
-      font-size: 12px;
-      font-weight: 700;
-      color: var(--accent);
-      margin-bottom: 12px;
-    }
-
-    .step-title {
-      font-size: 16px;
-      font-weight: 700;
-      margin-bottom: 8px;
-    }
-
-    .step-body {
+    .pane-desc {
       font-size: 13px;
-      color: var(--text-muted);
-      line-height: 1.6;
+      color: var(--ink-muted);
     }
 
-    /* Downloads Section */
-    .download-card {
-      background: var(--bg-card);
-      border: 1px solid var(--border-accent);
-      border-radius: var(--radius);
-      padding: 36px 32px;
-      text-align: center;
-      margin-bottom: 80px;
+    /* Downloads Manifest Table */
+    .manifest-section {
+      padding: 44px 28px;
+      border-bottom: 1px solid var(--rule);
     }
 
-    .download-grid {
-      display: grid;
-      grid-template-columns: repeat(3, 1fr);
-      gap: 16px;
-      margin-top: 24px;
+    .manifest-table {
+      width: 100%;
+      border-collapse: collapse;
+      font-family: var(--font-mono);
+      font-size: 12px;
+      background: var(--paper-card);
+      border: 1px solid var(--rule-dark);
+      margin-top: 16px;
+    }
+
+    .manifest-table th {
       text-align: left;
-    }
-
-    .dl-item {
-      background: rgba(0, 0, 0, 0.3);
-      border: 1px solid var(--border);
-      border-radius: 8px;
-      padding: 16px;
-      text-decoration: none;
-      color: var(--text);
-      display: flex;
-      flex-direction: column;
-      justify-content: space-between;
-      transition: all 0.2s;
-    }
-    .dl-item:hover {
-      border-color: var(--accent);
-      background: rgba(217, 119, 87, 0.05);
-    }
-
-    .dl-name {
-      font-weight: 700;
-      font-size: 14px;
-      margin-bottom: 4px;
-    }
-    .dl-sub {
-      font-size: 12px;
-      color: var(--text-muted);
-      margin-bottom: 12px;
-    }
-    .dl-tag {
-      align-self: flex-start;
-      font-family: 'JetBrains Mono', monospace;
+      padding: 12px 18px;
+      background: var(--paper-sunken);
+      border-bottom: 1px solid var(--rule-dark);
       font-size: 11px;
-      padding: 2px 8px;
-      border-radius: 4px;
-      background: rgba(255, 255, 255, 0.06);
-      color: var(--accent);
+      text-transform: uppercase;
+      letter-spacing: 0.06em;
+      color: var(--ink-muted);
     }
 
-    /* Footer */
-    footer {
-      border-top: 1px solid var(--border);
-      padding: 32px 0;
-      text-align: center;
-      font-size: 13px;
-      color: var(--text-muted);
+    .manifest-table td {
+      padding: 14px 18px;
+      border-bottom: 1px solid var(--rule);
+      vertical-align: middle;
     }
-    footer a {
-      color: var(--text);
+    .manifest-table tr:last-child td {
+      border-bottom: none;
+    }
+    .manifest-table tr:hover td {
+      background: var(--paper);
+    }
+
+    .table-target {
+      font-weight: 700;
+      color: var(--ink);
+    }
+    .table-detail {
+      color: var(--ink-muted);
+    }
+
+    .table-btn {
+      display: inline-block;
+      padding: 4px 10px;
+      background: var(--paper-sunken);
+      border: 1px solid var(--rule-dark);
+      border-radius: 3px;
+      color: var(--ink);
       text-decoration: none;
-      font-weight: 500;
+      font-weight: 700;
+      transition: all 0.15s;
+    }
+    .table-btn:hover {
+      background: var(--terracotta);
+      color: #FFF;
+      border-color: var(--terracotta);
+    }
+
+    /* Monospace Minimal Footer */
+    footer {
+      padding: 24px 28px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      font-family: var(--font-mono);
+      font-size: 11px;
+      color: var(--ink-faint);
+    }
+
+    footer a {
+      color: var(--ink-muted);
+      text-decoration: none;
     }
     footer a:hover {
-      color: var(--accent);
+      color: var(--terracotta);
     }
 
-    /* Responsive */
-    @media (max-width: 768px) {
-      h1 { font-size: 32px; }
-      .hero-sub { font-size: 16px; }
-      .preview-grid, .steps-grid, .download-grid, .metrics-strip {
-        grid-template-columns: 1fr;
-      }
-      .metrics-strip { gap: 24px; }
+    /* Responsive adjustments */
+    @media (max-width: 880px) {
+      .hero-split { grid-template-columns: 1fr; }
+      .hero-main { border-right: none; border-bottom: 1px solid var(--rule); padding: 40px 24px; }
+      .hero-interactive { padding: 36px 24px; }
+      .spec-grid { grid-template-columns: 1fr 1fr; }
+      .spec-cell { border-bottom: 1px solid var(--rule); }
+      .spec-cell:nth-child(2) { border-right: none; }
+      .protocol-grid { grid-template-columns: 1fr; }
+      .protocol-column { border-right: none; border-bottom: 1px solid var(--rule); }
+      .visual-strip { grid-template-columns: 1fr; }
+      .visual-pane { border-right: none; border-bottom: 1px solid var(--rule); }
+      h1 { font-size: 34px; }
     }
   </style>
 </head>
 <body>
-  <div class="ambient-glow"></div>
 
-  <div class="container">
-    <!-- Header -->
-    <header>
-      <div class="nav-wrap">
-        <a href="#" class="brand">
-          <img src="logo.svg" alt="ForwardBin Logo" class="brand-logo">
-          <span class="brand-title">ForwardBin</span>
-        </a>
-        <div class="nav-links">
-          <a href="#features" class="nav-link">Features</a>
-          <a href="#downloads" class="nav-link">Downloads</a>
-          <a href="https://github.com/s-chudmunge/forwardbin" target="_blank" rel="noopener noreferrer" class="btn-github">
-            <svg height="16" width="16" viewBox="0 0 16 16" fill="currentColor">
-              <path d="M8 0C3.58 0 0 3.58 0 8c0 3.54 2.29 6.53 5.47 7.59.4.07.55-.17.55-.38 0-.19-.01-.82-.01-1.49-2.01.37-2.53-.49-2.69-.94-.09-.23-.48-.94-.82-1.13-.28-.15-.68-.52-.01-.53.63-.01 1.08.58 1.23.82.72 1.21 1.87.87 2.33.66.07-.52.28-.87.51-1.07-1.78-.2-3.64-.89-3.64-3.95 0-.87.31-1.59.82-2.15-.08-.2-.36-1.02.08-2.12 0 0 .67-.21 2.2.82.64-.18 1.32-.27 2-.27.68 0 1.36.09 2 .27 1.53-1.04 2.2-.82 2.2-.82.44 1.1.16 1.92.08 2.12.51.56.82 1.27.82 2.15 0 3.07-1.87 3.75-3.65 3.95.29.25.54.73.54 1.48 0 1.07-.01 1.93-.01 2.2 0 .21.15.46.55.38A8.013 8.013 0 0016 8c0-4.42-3.58-8-8-8z"/>
-            </svg>
-            <span>GitHub</span>
+  <div class="outer-frame">
+    <!-- Top Spec Bar -->
+    <header class="spec-header">
+      <a href="#" class="brand-mark">
+        <svg viewBox="0 0 100 100" fill="none">
+          <g stroke="#D97757" stroke-width="11.5" stroke-linecap="round" stroke-linejoin="round">
+            <path d="M 72.82 76.00 A 33 33 0 1 1 72.82 24.00" />
+            <path d="M 44.5 34 L 60.5 50 L 44.5 66" />
+            <path d="M 64.5 34 L 80.5 50 L 64.5 66" />
+          </g>
+        </svg>
+        <div class="brand-tagline">
+          <span class="brand-name">ForwardBin</span>
+          <span class="brand-sub">Native Rust Assistant</span>
+        </div>
+      </a>
+
+      <div class="status-badge">
+        <span class="status-dot"></span>
+        <span>SYS.STATUS: OPERATIONAL v1.0.0</span>
+      </div>
+
+      <nav class="header-links">
+        <a href="#spec">Specs</a>
+        <a href="#protocol">Protocol</a>
+        <a href="#downloads">Downloads</a>
+        <a href="https://github.com/s-chudmunge/forwardbin" target="_blank" rel="noopener noreferrer">GitHub ↗</a>
+      </nav>
+    </header>
+
+    <!-- Asymmetric Hero Split -->
+    <section class="hero-split">
+      <div class="hero-main">
+        <div class="eyebrow">// ZERO-ELECTRON DESKTOP DROP BIN</div>
+        <h1>
+          Bookmarks are where good papers <span class="terracotta-text">go to die.</span>
+        </h1>
+        <p class="hero-lead">
+          You won't watch that 45-minute YouTube lecture in your tab graveyard. ForwardBin places a fast, translucent drop bin on your desktop. Drag a paper, video, or webinar link, and Jarvis converts foreign timezones, auto-reserves a free calendar slot, and emails you a clean briefing when your slot begins.
+        </p>
+
+        <!-- Direct Install Slip -->
+        <div class="terminal-slip">
+          <div class="terminal-code">
+            <span class="term-prompt">$</span>curl -sSL https://raw.githubusercontent.com/s-chudmunge/forwardbin/main/install.sh | bash
+          </div>
+          <button class="copy-btn" id="copyBtn" onclick="copyInstall()">Copy</button>
+        </div>
+
+        <div class="hero-cta-row">
+          <a href="https://github.com/s-chudmunge/forwardbin/releases/download/v1.0.0/forwardbin-installer.run" class="btn-action">
+            Download .run (3.9 MB)
+          </a>
+          <a href="https://github.com/s-chudmunge/forwardbin" target="_blank" rel="noopener noreferrer" class="btn-secondary">
+            Inspect Source ↗
           </a>
         </div>
       </div>
-    </header>
 
-    <!-- Hero -->
-    <section class="hero">
-      <div class="badge">
-        <span>●</span> Open Source • Linux & macOS • Native Rust
-      </div>
-
-      <h1>The desktop drop bin that actually schedules your reading list.</h1>
-
-      <p class="hero-sub">
-        Drag any YouTube lecture, arXiv paper, or webinar link into the bin. Jarvis extracts reading time, converts timezones, books an open calendar slot, and alerts you when it's time to focus.
-      </p>
-
-      <div class="hero-actions">
-        <a href="#downloads" class="btn-primary">
-          <svg width="18" height="18" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4M7 10l5 5 5-5M12 15V3"/></svg>
-          Get ForwardBin v1.0.0
-        </a>
-        <a href="https://github.com/s-chudmunge/forwardbin" target="_blank" rel="noopener noreferrer" class="btn-secondary">
-          Star on GitHub
-        </a>
-      </div>
-
-      <!-- Quick Install Snippet -->
-      <div class="cli-box">
-        <div class="cli-content">
-          <span class="cli-prompt">$</span>curl -sSL https://raw.githubusercontent.com/s-chudmunge/forwardbin/main/install.sh | bash
+      <!-- Right Column: Interactive Drop Simulator -->
+      <div class="hero-interactive">
+        <div class="interactive-header">
+          <span class="sim-tag">SANDBOX TEST DRIVE</span>
+          <span style="font-family:var(--font-mono); font-size:11px; color:var(--terracotta);">DRAG & DROP BELOW</span>
         </div>
-        <button class="copy-btn" id="copyBtn" onclick="copyCommand()">Copy</button>
+
+        <div class="interactive-stage">
+          <div class="bin-dropzone" id="binDropzone" ondragover="handleDragOver(event)" ondragleave="handleDragLeave(event)" ondrop="handleDrop(event)" onclick="handleBinClick()">
+            <div class="bin-speech-bubble" id="binBubble">FEED ME!</div>
+            <img src="bin_terracotta_preview.png" alt="ForwardBin Drop Widget" class="bin-img-art">
+          </div>
+        </div>
+
+        <div class="chips-label">Sample items to test (drag one into the bin):</div>
+        <div class="draggable-chips">
+          <div class="chip-item" draggable="true" ondragstart="handleDragStart(event, 'Georgetown MS Info Session (EDT)', 30, 'event')">
+            <span>📅</span> MS Bioinformatics Webinar (EDT)
+          </div>
+          <div class="chip-item" draggable="true" ondragstart="handleDragStart(event, 'arXiv:2403.05530 (Diffusion Models)', 45, 'paper')">
+            <span>📄</span> arXiv:2403.05530 (45m paper)
+          </div>
+          <div class="chip-item" draggable="true" ondragstart="handleDragStart(event, 'Karpathy: Intro to LLMs Lecture', 60, 'video')">
+            <span>▶️</span> YouTube: LLM Talk (1h)
+          </div>
+        </div>
+
+        <div class="sim-terminal-log" id="simLog">
+          [JARVIS READY] Drag any chip above or click bin to simulate slot reservation...
+        </div>
       </div>
     </section>
 
-    <!-- Visual Previews -->
-    <div class="preview-grid" id="features">
-      <div class="preview-card">
-        <div class="preview-img-wrap">
-          <img src="bin_terracotta_preview.png" alt="Desktop Drop Bin" class="preview-img">
-        </div>
-        <h3 class="preview-title">Floating Desktop Drop Bin</h3>
-        <p class="preview-desc">
-          Translucent, always-on-top bin with spring physics. Drag any link or text over it, or press <kbd style="font-family:'JetBrains Mono'; background:rgba(255,255,255,0.08); padding:2px 5px; border-radius:4px;">Super+Shift+F</kbd>.
-        </p>
+    <!-- Hardware-Grade Spec Sheet Grid -->
+    <section class="spec-grid" id="spec">
+      <div class="spec-cell">
+        <div class="spec-metric accent">&lt; 8 MB</div>
+        <div class="spec-title">Memory Footprint</div>
+        <p class="spec-desc">Deterministic RAII deallocation via native Rust. No garbage collector, zero Electron overhead.</p>
       </div>
-
-      <div class="preview-card">
-        <div class="preview-img-wrap">
-          <img src="dashboard_light_preview.png" alt="Queue & Dashboard" class="preview-img">
-        </div>
-        <h3 class="preview-title">Queue Dashboard & Briefings</h3>
-        <p class="preview-desc">
-          Click the bin anytime to view upcoming focus slots. When a slot starts, Jarvis dispatches a clean Gmail-style takeaway summary.
-        </p>
+      <div class="spec-cell">
+        <div class="spec-metric">4 ms</div>
+        <div class="spec-title">Cold CLI Latency</div>
+        <p class="spec-desc">Compiled with whole-program Fat LTO and SQLite WAL mode for instant terminal invocation.</p>
       </div>
-    </div>
-
-    <!-- Metrics -->
-    <div class="metrics-strip">
-      <div class="metric-item">
-        <div class="metric-val">&lt; 8 MB</div>
-        <div class="metric-label">Memory Footprint</div>
+      <div class="spec-cell">
+        <div class="spec-metric">0.0%</div>
+        <div class="spec-title">Idle CPU Usage</div>
+        <p class="spec-desc">Adaptive 60 FPS spring physics while dragging, relinquishes CPU entirely when resting.</p>
       </div>
-      <div class="metric-item">
-        <div class="metric-val">4 ms</div>
-        <div class="metric-label">CLI Query Latency</div>
-      </div>
-      <div class="metric-item">
-        <div class="metric-val">0.0%</div>
-        <div class="metric-label">Idle CPU Usage</div>
-      </div>
-      <div class="metric-item">
-        <div class="metric-val">Zero</div>
-        <div class="metric-label">Electron Bloat</div>
-      </div>
-    </div>
-
-    <!-- How It Works -->
-    <div class="section-heading">
-      <h2 class="section-title">How It Works</h2>
-      <p class="section-sub">From browser tab graveyard to scheduled calendar focus blocks in 3 steps.</p>
-    </div>
-
-    <div class="steps-grid">
-      <div class="step-card">
-        <div class="step-num">01 / CAPTURE</div>
-        <h3 class="step-title">Drop & Forget</h3>
-        <p class="step-body">
-          Drop any URL or PDF into the desktop bin. Works via drag-and-drop, global keyboard hotkey, or CLI.
-        </p>
-      </div>
-
-      <div class="step-card">
-        <div class="step-num">02 / EXTRACT & SCHEDULE</div>
-        <h3 class="step-title">Autonomous Booking</h3>
-        <p class="step-body">
-          Jarvis estimates reading time, extracts webinar schedules, normalizes timezones (e.g. EDT ➔ local), and reserves a collision-free calendar slot.
-        </p>
-      </div>
-
-      <div class="step-card">
-        <div class="step-num">03 / FOCUS</div>
-        <h3 class="step-title">Slot-Is-Up Brief</h3>
-        <p class="step-body">
-          When your slot begins, receive a desktop notification and a high-contrast takeaway brief in your inbox ready for deep work.
-        </p>
-      </div>
-    </div>
-
-    <!-- Downloads Section -->
-    <section class="download-card" id="downloads">
-      <h2 class="section-title">Install ForwardBin v1.0.0</h2>
-      <p class="section-sub">Single-file zero-dependency installer for Linux and macOS.</p>
-
-      <div class="download-grid">
-        <a href="https://github.com/s-chudmunge/forwardbin/releases/download/v1.0.0/forwardbin-installer.run" class="dl-item">
-          <div>
-            <div class="dl-name">Linux .run Installer</div>
-            <div class="dl-sub">Fedora, Ubuntu, Arch, Debian</div>
-          </div>
-          <span class="dl-tag">4 MB • Executable</span>
-        </a>
-
-        <a href="https://github.com/s-chudmunge/forwardbin/releases/download/v1.0.0/forwardbin-v1.0.0-linux-x86_64.tar.gz" class="dl-item">
-          <div>
-            <div class="dl-name">Linux Prebuilt Tarball</div>
-            <div class="dl-sub">x86_64 standalone binaries</div>
-          </div>
-          <span class="dl-tag">tar.gz</span>
-        </a>
-
-        <a href="https://github.com/s-chudmunge/forwardbin" target="_blank" rel="noopener noreferrer" class="dl-item">
-          <div>
-            <div class="dl-name">macOS & Source</div>
-            <div class="dl-sub">Build from source via Cargo</div>
-          </div>
-          <span class="dl-tag">GitHub</span>
-        </a>
+      <div class="spec-cell">
+        <div class="spec-metric accent">D-Bus</div>
+        <div class="spec-title">Native IPC</div>
+        <p class="spec-desc">Pure in-process D-Bus notifications over zbus and arboard clipboard without subprocess forks.</p>
       </div>
     </section>
 
-    <!-- Footer -->
+    <!-- The 3-Step Protocol Ledger -->
+    <div class="protocol-header" id="protocol">
+      <div class="protocol-title">How It Works</div>
+      <div style="font-family:var(--font-mono); font-size:11px; color:var(--ink-faint);">PIPELINE MANIFEST // 01-03</div>
+    </div>
+
+    <section class="protocol-grid">
+      <div class="protocol-column">
+        <span class="step-badge">STEP 01</span>
+        <h3 class="protocol-col-title">Frictionless Ingestion</h3>
+        <p class="protocol-col-body">
+          Drag links, PDFs, or highlighted text into the desktop bin, hit your global hotkey <kbd style="font-family:var(--font-mono); background:var(--paper-sunken); padding:1px 5px; border-radius:3px; border:1px solid var(--rule);">Super+Shift+F</kbd>, or pipe from the command line with <code style="font-family:var(--font-mono); font-size:12px;">forwardbin add</code>.
+        </p>
+      </div>
+
+      <div class="protocol-column">
+        <span class="step-badge">STEP 02</span>
+        <h3 class="protocol-col-title">Deep Content & Timezone Logic</h3>
+        <p class="protocol-col-body">
+          Jarvis parses hidden event dates, estimates reading duration, deterministically converts foreign timezones (e.g. EDT ➔ local IST), and finds an open, collision-free slot in your calendar schedule.
+        </p>
+      </div>
+
+      <div class="protocol-column">
+        <span class="step-badge">STEP 03</span>
+        <h3 class="protocol-col-title">Focus Chimes & Inbox Briefs</h3>
+        <p class="protocol-col-body">
+          The moment your scheduled slot arrives, Jarvis triggers a desktop alert and delivers a clean, high-contrast Gmail briefing with key takeaways and direct source links ready for deep focus.
+        </p>
+      </div>
+    </section>
+
+    <!-- Visual Strip: Bin & Dashboard -->
+    <section class="visual-strip">
+      <div class="visual-pane">
+        <div class="preview-canvas">
+          <img src="bin_terracotta_preview.png" alt="Desktop Drop Bin Preview">
+        </div>
+        <div>
+          <h4 class="pane-title">Floating Desktop Drop Bin</h4>
+          <p class="pane-desc">Minimalist, always-on-top translucent bin with realistic physics. Resides unobtrusively on your screen.</p>
+        </div>
+      </div>
+
+      <div class="visual-pane">
+        <div class="preview-canvas">
+          <img src="dashboard_light_preview.png" alt="Queue Dashboard Preview">
+        </div>
+        <div>
+          <h4 class="pane-title">Queue Dashboard & Briefings</h4>
+          <p class="pane-desc">Click the bin to inspect pending reading slots, reschedule sessions, or open materials directly.</p>
+        </div>
+      </div>
+    </section>
+
+    <!-- Downloads Manifest Table -->
+    <section class="manifest-section" id="downloads">
+      <div style="display:flex; justify-content:space-between; align-items:flex-end;">
+        <div>
+          <h3 style="font-family:var(--font-display); font-size:22px; font-weight:700;">Release Artifacts v1.0.0</h3>
+          <p style="color:var(--ink-muted); font-size:13px; margin-top:2px;">Prebuilt self-extracting bundles and standalone packages.</p>
+        </div>
+        <span style="font-family:var(--font-mono); font-size:11px; color:var(--terracotta);">TARGET: LINUX & macOS</span>
+      </div>
+
+      <table class="manifest-table">
+        <thead>
+          <tr>
+            <th>Format</th>
+            <th>Description</th>
+            <th>Compatibility</th>
+            <th>Action</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr>
+            <td class="table-target">One-Line Script</td>
+            <td class="table-detail">Zero-dependency automated download and systemd setup</td>
+            <td class="table-detail">Fedora • Ubuntu • Arch • Debian</td>
+            <td><a href="#copyBtn" onclick="copyInstall()" class="table-btn">Copy Command</a></td>
+          </tr>
+          <tr>
+            <td class="table-target">.run Installer</td>
+            <td class="table-detail">Self-extracting single-file binary installer (3.9 MB)</td>
+            <td class="table-detail">Linux x86_64</td>
+            <td><a href="https://github.com/s-chudmunge/forwardbin/releases/download/v1.0.0/forwardbin-installer.run" class="table-btn">Download .run</a></td>
+          </tr>
+          <tr>
+            <td class="table-target">Tarball (.tar.gz)</td>
+            <td class="table-detail">Standalone pre-compiled Rust engine & desktop assets</td>
+            <td class="table-detail">Linux x86_64</td>
+            <td><a href="https://github.com/s-chudmunge/forwardbin/releases/download/v1.0.0/forwardbin-v1.0.0-linux-x86_64.tar.gz" class="table-btn">Download Tarball</a></td>
+          </tr>
+          <tr>
+            <td class="table-target">Source & macOS</td>
+            <td class="table-detail">Full source tree for Cargo builds & launchd service</td>
+            <td class="table-detail">macOS Apple Silicon / Intel</td>
+            <td><a href="https://github.com/s-chudmunge/forwardbin" target="_blank" rel="noopener noreferrer" class="table-btn">View GitHub</a></td>
+          </tr>
+        </tbody>
+      </table>
+    </section>
+
+    <!-- Minimalist Ruled Footer -->
     <footer>
-      <p>
-        ForwardBin Jarvis is open source under the MIT License • Built with Rust •
-        <a href="https://github.com/s-chudmunge/forwardbin" target="_blank" rel="noopener noreferrer">GitHub Repository</a>
-      </p>
+      <div>FORWARD BIN // OPEN SOURCE UNDER MIT LICENSE</div>
+      <div>
+        <a href="https://github.com/s-chudmunge/forwardbin" target="_blank" rel="noopener noreferrer">GITHUB REPOSITORY ↗</a>
+      </div>
     </footer>
   </div>
 
   <script>
-    function copyCommand() {
+    // Copy install command with reactive feedback
+    function copyInstall() {
       const cmd = "curl -sSL https://raw.githubusercontent.com/s-chudmunge/forwardbin/main/install.sh | bash";
       navigator.clipboard.writeText(cmd).then(() => {
         const btn = document.getElementById("copyBtn");
-        btn.innerText = "Copied!";
-        btn.style.color = "#d97757";
+        btn.innerText = "COPIED!";
+        btn.style.background = "#D97757";
+        btn.style.color = "#FFFFFF";
         setTimeout(() => {
-          btn.innerText = "Copy";
+          btn.innerText = "COPY";
+          btn.style.background = "";
           btn.style.color = "";
-        }, 2000);
+        }, 2200);
       });
+    }
+
+    // Interactive Drag & Drop Sandbox Simulation
+    let draggedData = null;
+
+    function handleDragStart(e, title, duration, kind) {
+      draggedData = { title, duration, kind, el: e.target };
+      e.dataTransfer.setData("text/plain", title);
+    }
+
+    function handleDragOver(e) {
+      e.preventDefault();
+      document.getElementById("binDropzone").classList.add("drag-over");
+      document.getElementById("binBubble").innerText = "DROP HERE!";
+    }
+
+    function handleDragLeave(e) {
+      document.getElementById("binDropzone").classList.remove("drag-over");
+      document.getElementById("binBubble").innerText = "FEED ME!";
+    }
+
+    function handleDrop(e) {
+      e.preventDefault();
+      const dropzone = document.getElementById("binDropzone");
+      const bubble = document.getElementById("binBubble");
+      const log = document.getElementById("simLog");
+
+      dropzone.classList.remove("drag-over");
+      bubble.innerText = "SLURP!";
+
+      if (draggedData && draggedData.el) {
+        draggedData.el.classList.add("dropped");
+      }
+
+      // Compute sample scheduled time (current time + 2 hours rounded to next 15 min)
+      const now = new Date();
+      now.setHours(now.getHours() + 2);
+      const timeStr = now.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
+
+      log.className = "sim-terminal-log success";
+      const itemTitle = draggedData ? draggedData.title : "Dropped item";
+      log.innerHTML = `✓ <strong>Scheduled:</strong> "${itemTitle}" at ${timeStr} • Calendar slot booked • Brief queued`;
+
+      setTimeout(() => {
+        bubble.innerText = "FED!";
+        setTimeout(() => { bubble.innerText = "FEED ME!"; }, 2000);
+      }, 700);
+    }
+
+    function handleBinClick() {
+      const log = document.getElementById("simLog");
+      log.className = "sim-terminal-log";
+      log.innerHTML = `[SIMULATOR] Drop any chip into the bin or run <code style="color:#D97757;">forwardbin add &lt;url&gt;</code> in your terminal.`;
     }
   </script>
 </body>
