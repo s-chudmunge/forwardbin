@@ -87,11 +87,9 @@ pub fn get_config_file() -> PathBuf {
 }
 
 fn auto_discover_local_keys() -> HashMap<String, String> {
-    let home = dirs::home_dir().unwrap_or_default();
     let candidates = [
-        home.join("Documents/projects/eulerfold/backend/.env"),
-        home.join("eulerfold/backend/.env"),
-        home.join(".env"),
+        get_config_dir().join(".env"),
+        PathBuf::from(".env"),
     ];
     let mut map = HashMap::new();
     for file in &candidates {

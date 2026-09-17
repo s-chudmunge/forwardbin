@@ -47,12 +47,11 @@ DEFAULT_CONFIG = {
 }
 
 
-def _auto_discover_eulerfold_keys() -> Dict[str, str]:
-    """Auto-detect keys from known local environment files if not already set."""
+def _auto_discover_local_env() -> Dict[str, str]:
+    """Auto-detect keys from local .env files if not already set."""
     candidates = [
-        Path.home() / "Documents" / "projects" / "eulerfold" / "backend" / ".env",
-        Path.home() / "eulerfold" / "backend" / ".env",
-        Path.home() / "Documents" / "projects" / "eulerfold" / "frontend" / ".env",
+        CONFIG_DIR / ".env",
+        Path.cwd() / ".env",
     ]
     discovered = {}
     for env_file in candidates:
@@ -98,8 +97,8 @@ def load_config() -> Dict[str, Any]:
         except Exception:
             pass
 
-    # Layer 2: Auto-discover from local projects if not present in config file
-    discovered = _auto_discover_eulerfold_keys()
+    # Layer 2: Auto-discover from local .env files if not present in config file
+    discovered = _auto_discover_local_env()
     for k, v in discovered.items():
         if not config.get(k) and v:
             config[k] = v
