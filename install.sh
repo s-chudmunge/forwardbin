@@ -80,22 +80,22 @@ fi
 
 if command -v pip3 &>/dev/null || command -v pip &>/dev/null; then
     PIP_CMD="$(command -v pip3 || command -v pip)"
+    $PIP_CMD install --user "$PROJECT_DIR" 2>/dev/null || \
+    $PIP_CMD install --user --break-system-packages "$PROJECT_DIR" 2>/dev/null || \
     $PIP_CMD install --user -e "$PROJECT_DIR" 2>/dev/null || \
-    $PIP_CMD install --user --break-system-packages -e "$PROJECT_DIR" 2>/dev/null || \
     echo "ℹ️  System packages will be used for Python dependencies."
 fi
 
 # ------------------------------------------------------------------------------
 # 4. Install Rust Core Binary & Unified Launcher
 # ------------------------------------------------------------------------------
-echo "📦 Installing binaries to $BIN_DIR..."
-rm -f "$LIB_DIR/forwardbin-core"
+echo "📦 Installing ForwardBin unified launcher & binaries..."
 cp "$PREBUILT" "$LIB_DIR/forwardbin-core"
 chmod +x "$LIB_DIR/forwardbin-core"
 
-rm -f "$BIN_DIR/forwardbin"
 cp "$PROJECT_DIR/bin/forwardbin" "$BIN_DIR/forwardbin"
 chmod +x "$BIN_DIR/forwardbin"
+echo "✅ Installed forwardbin CLI to $BIN_DIR/forwardbin"
 
 # ------------------------------------------------------------------------------
 # 5. Configure Background Daemons (launchd on macOS, systemd on Linux)
@@ -144,9 +144,13 @@ if [ ! -f "$CONFIG_DIR/config.json" ]; then
     echo "=================================================================="
     echo "🧙  First-Time Setup: Configure ForwardBin"
     echo "=================================================================="
-    echo "Would you like to run the configuration wizard now?"
-    read -rp "(Set your notification email, timezone, API keys) [Y/n]: " RUN_WIZARD
-    if [[ ! "$RUN_WIZARD" =~ ^[Nn]$ ]]; then
+    RUN_WIZARD="n"
+    if [ -t 0 ]; then
+        read -rp "Would you like to run the configuration wizard now? [y/N]: " RUN_WIZARD || RUN_WIZARD="n"
+    elif [ -e /dev/tty ]; then
+        read -rp "Would you like to run the configuration wizard now? [y/N]: " RUN_WIZARD </dev/tty || RUN_WIZARD="n"
+    fi
+    if [[ "$RUN_WIZARD" =~ ^[Yy]$ ]]; then
         "$BIN_DIR/forwardbin" setup || true
     fi
 fi
