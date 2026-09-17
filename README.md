@@ -10,6 +10,7 @@
 </p>
 
 <p align="center">
+  <a href="https://s-chudmunge.github.io/forwardbin/"><img src="https://img.shields.io/badge/Website-Live_Landing_Site-d97757?style=for-the-badge&logo=googlechrome&logoColor=white" alt="Website" /></a>
   <a href="https://www.rust-lang.org/"><img src="https://img.shields.io/badge/Rust-2021_Edition-dea584?style=for-the-badge&logo=rust&logoColor=white" alt="Rust" /></a>
   <a href="https://www.python.org/"><img src="https://img.shields.io/badge/Python-3.9+-3776AB?style=for-the-badge&logo=python&logoColor=white" alt="Python" /></a>
   <a href="https://www.kernel.org/"><img src="https://img.shields.io/badge/Linux-Fedora%20%7C%20Ubuntu%20%7C%20Arch-FCC624?style=for-the-badge&logo=linux&logoColor=black" alt="Linux" /></a>
