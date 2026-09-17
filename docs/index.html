@@ -3,11 +3,10 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>ForwardBin — Drop it. Forget it. We’ll remind you.</title>
-  <meta name="description" content="A floating drop bin for Linux. Drag any link, text, or file and schedule it to return when you actually have time. Built in pure Rust & GTK.">
-  <meta property="og:title" content="ForwardBin — Forward to your future self">
-  <meta property="og:description" content="A floating drop bin for Linux. Drop it now, receive it later. 7.8 MB RAM, zero Electron, 100% private.">
-  <meta property="og:type" content="website">
+  <title>ForwardBin: Floating drop bin for Linux</title>
+  <meta name="description" content="Drop anything now, receive it later. Pure Rust and GTK for Linux. 7.8 MB RAM, zero Electron, 100% private.">
+  <meta property="og:title" content="ForwardBin: Floating drop bin for Linux">
+  <meta property="og:description" content="Drop anything now, receive it later. Pure Rust and GTK for Linux.">
   <meta property="og:image" content="https://s-chudmunge.github.io/forwardbin/bin_terracotta_preview.png">
   <link rel="icon" type="image/svg+xml" href="logo.svg">
   
@@ -24,17 +23,15 @@
 
     :root {
       --bg: #FAF8F5;
-      --bg-surface: #FFFFFF;
-      --bg-subtle: #F2EFE9;
-      --text: #161514;
-      --text-muted: #827E76;
-      --text-ghost: #D2CEC4;
+      --bg-subtle: #F3EFE9;
+      --text: #141312;
+      --text-muted: #7E7A72;
+      --text-ghost: #D8D4CA;
       --terracotta: #D97757;
       --terracotta-dark: #BF6243;
-      --terracotta-light: #FDF3EF;
-      --terracotta-glow: rgba(217, 119, 87, 0.18);
-      --border: #E6E2D8;
-      --border-dark: #C9C4B8;
+      --terracotta-light: #FDF2EE;
+      --terracotta-glow: rgba(217, 119, 87, 0.16);
+      --border: #E8E4D9;
       --mono: 'JetBrains Mono', monospace;
       --sans: 'Plus Jakarta Sans', -apple-system, BlinkMacSystemFont, sans-serif;
     }
@@ -43,652 +40,518 @@
       font-family: var(--sans);
       background-color: var(--bg);
       color: var(--text);
-      scroll-behavior: smooth;
       -webkit-font-smoothing: antialiased;
     }
 
     body {
       overflow-x: hidden;
-      line-height: 1.5;
+      line-height: 1.4;
     }
 
-    /* Ambient paper grain subtle texture */
-    body::before {
-      content: "";
+    /* Minimal floating brand bar */
+    header {
       position: fixed;
-      top: 0; left: 0; width: 100%; height: 100%;
-      pointer-events: none;
-      opacity: 0.025;
-      background-image: radial-gradient(#000 1px, transparent 1px);
-      background-size: 24px 24px;
-      z-index: 999;
-    }
-
-    /* Minimal Floating Top Header */
-    nav {
-      position: fixed;
-      top: 20px;
-      left: 50%;
-      transform: translateX(-50%);
-      width: calc(100% - 40px);
-      max-width: 960px;
+      top: 0;
+      left: 0;
+      width: 100%;
+      padding: 24px 36px;
       display: flex;
       align-items: center;
       justify-content: space-between;
-      padding: 10px 18px;
-      background: rgba(250, 248, 245, 0.82);
-      backdrop-filter: blur(16px);
-      -webkit-backdrop-filter: blur(16px);
-      border: 1px solid rgba(230, 226, 216, 0.85);
-      border-radius: 999px;
       z-index: 100;
-      box-shadow: 0 4px 20px rgba(0, 0, 0, 0.03);
-      transition: all 0.3s ease;
+      pointer-events: none;
     }
 
-    .brand {
-      display: flex;
+    .brand-wrap {
+      display: inline-flex;
       align-items: center;
-      gap: 10px;
+      gap: 12px;
       text-decoration: none;
       color: var(--text);
       font-weight: 700;
-      font-size: 0.95rem;
-      letter-spacing: -0.01em;
-    }
-
-    .brand-icon {
-      width: 26px;
-      height: 26px;
-    }
-
-    .nav-tag {
-      font-family: var(--mono);
-      font-size: 0.7rem;
-      background: var(--terracotta-light);
-      color: var(--terracotta);
-      padding: 2px 8px;
+      font-size: 1rem;
+      letter-spacing: -0.02em;
+      pointer-events: auto;
+      background: rgba(250, 248, 245, 0.75);
+      padding: 8px 16px;
       border-radius: 999px;
-      font-weight: 600;
+      backdrop-filter: blur(12px);
+      -webkit-backdrop-filter: blur(12px);
+      border: 1px solid rgba(232, 228, 217, 0.6);
     }
 
-    .nav-actions {
+    .brand-wrap img {
+      width: 22px;
+      height: 22px;
+    }
+
+    .header-links {
       display: flex;
       align-items: center;
       gap: 12px;
+      pointer-events: auto;
     }
 
-    .nav-btn {
+    .header-link {
       text-decoration: none;
       font-size: 0.85rem;
       font-weight: 600;
-      padding: 6px 14px;
+      padding: 8px 16px;
       border-radius: 999px;
+      color: var(--text);
+      background: rgba(250, 248, 245, 0.75);
+      border: 1px solid rgba(232, 228, 217, 0.6);
+      backdrop-filter: blur(12px);
+      -webkit-backdrop-filter: blur(12px);
       transition: all 0.2s ease;
     }
 
-    .nav-btn-subtle {
-      color: var(--text-muted);
-    }
-    .nav-btn-subtle:hover {
-      color: var(--text);
-    }
-
-    .nav-btn-primary {
+    .header-link:hover {
       background: var(--text);
-      color: var(--bg);
-    }
-    .nav-btn-primary:hover {
-      background: #000;
-      transform: translateY(-1px);
+      color: #fff;
     }
 
-    /* Scroll Reveal Baseline */
-    .reveal {
-      opacity: 0;
-      transform: translateY(32px);
-      transition: opacity 0.8s cubic-bezier(0.16, 1, 0.3, 1), transform 0.8s cubic-bezier(0.16, 1, 0.3, 1);
-      will-change: opacity, transform;
-    }
-
-    .reveal.active {
-      opacity: 1;
-      transform: translateY(0);
-    }
-
-    .reveal-delay-1 { transition-delay: 0.12s; }
-    .reveal-delay-2 { transition-delay: 0.24s; }
-    .reveal-delay-3 { transition-delay: 0.36s; }
-
-    /* SECTION 1: HERO */
-    .hero-section {
+    /* SCENE 1: MASSIVE OPENING HERO */
+    .hero {
       min-height: 100vh;
       display: flex;
       flex-direction: column;
       align-items: center;
       justify-content: center;
       text-align: center;
-      padding: 140px 24px 80px;
+      padding: 120px 24px 60px;
       position: relative;
     }
 
-    .hero-hopper-container {
+    .hero-tag {
+      font-family: var(--mono);
+      font-size: 0.8rem;
+      font-weight: 600;
+      text-transform: uppercase;
+      letter-spacing: 0.15em;
+      color: var(--terracotta);
+      margin-bottom: 24px;
+    }
+
+    .hero-title {
+      font-size: clamp(3.2rem, 8.5vw, 7.2rem);
+      font-weight: 800;
+      letter-spacing: -0.045em;
+      line-height: 1.02;
+      max-width: 980px;
+      margin-bottom: 32px;
+    }
+
+    .hero-title span {
+      color: var(--terracotta);
+      display: block;
+    }
+
+    .hero-sub {
+      font-size: clamp(1.2rem, 2.5vw, 1.6rem);
+      color: var(--text-muted);
+      max-width: 640px;
+      margin-bottom: 48px;
+      letter-spacing: -0.015em;
+    }
+
+    .hero-scroll-prompt {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 8px;
+      font-family: var(--mono);
+      font-size: 0.75rem;
+      letter-spacing: 0.12em;
+      text-transform: uppercase;
+      color: var(--text-muted);
+      margin-top: 40px;
+      animation: pulseUpDown 2s ease-in-out infinite;
+    }
+
+    @keyframes pulseUpDown {
+      0%, 100% { transform: translateY(0); opacity: 0.6; }
+      50% { transform: translateY(6px); opacity: 1; }
+    }
+
+    /* SCENE 2: SCROLL-PINNED STORYTELLER */
+    /* This container provides the scroll track (400vh) */
+    .story-track {
       position: relative;
-      width: 140px;
-      height: 140px;
-      margin-bottom: 40px;
+      height: 420vh;
+    }
+
+    /* The viewport stays pinned in place while scrolling */
+    .story-sticky {
+      position: sticky;
+      top: 0;
+      height: 100vh;
+      width: 100%;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      overflow: hidden;
+      padding: 40px 24px;
+    }
+
+    /* Visual stage in the center */
+    .stage-visual {
+      position: relative;
+      width: 200px;
+      height: 200px;
       display: flex;
       align-items: center;
       justify-content: center;
+      margin-bottom: 48px;
     }
 
-    .hero-hopper-halo {
-      position: absolute;
-      inset: -16px;
-      background: radial-gradient(circle, var(--terracotta-glow) 0%, transparent 70%);
-      border-radius: 50%;
-      animation: pulseGlow 4s ease-in-out infinite alternate;
-    }
-
-    @keyframes pulseGlow {
-      0% { transform: scale(0.9); opacity: 0.5; }
-      100% { transform: scale(1.15); opacity: 1; }
-    }
-
-    .hero-hopper-svg {
-      width: 110px;
-      height: 110px;
+    .stage-logo-wrap {
+      width: 130px;
+      height: 130px;
       position: relative;
-      z-index: 2;
-      filter: drop-shadow(0 12px 28px rgba(217, 119, 87, 0.24));
-      transition: transform 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+      transition: transform 0.6s cubic-bezier(0.16, 1, 0.3, 1), opacity 0.5s ease;
     }
 
-    .hero-hopper-container:hover .hero-hopper-svg {
-      transform: scale(1.08) rotate(4deg);
+    .stage-logo-wrap svg {
+      width: 100%;
+      height: 100%;
+      filter: drop-shadow(0 16px 36px rgba(217, 119, 87, 0.22));
     }
 
-    .hero-headline {
-      font-size: clamp(2.8rem, 7vw, 6.2rem);
+    /* Floating item element that drops into bin */
+    .floating-drop-item {
+      position: absolute;
+      top: -40px;
+      left: 50%;
+      transform: translateX(-50%);
+      background: #FFFFFF;
+      border: 1px solid var(--border);
+      padding: 8px 16px;
+      border-radius: 999px;
+      font-family: var(--mono);
+      font-size: 0.78rem;
+      color: var(--text);
+      white-space: nowrap;
+      box-shadow: 0 8px 24px rgba(0, 0, 0, 0.06);
+      transition: all 0.6s cubic-bezier(0.16, 1, 0.3, 1);
+      opacity: 0;
+    }
+
+    /* Time pill display */
+    .time-badge {
+      position: absolute;
+      bottom: -10px;
+      left: 50%;
+      transform: translateX(-50%) scale(0.9);
+      background: var(--terracotta);
+      color: #fff;
+      font-family: var(--mono);
+      font-size: 0.8rem;
+      font-weight: 600;
+      padding: 6px 16px;
+      border-radius: 999px;
+      box-shadow: 0 6px 20px rgba(217, 119, 87, 0.4);
+      opacity: 0;
+      transition: all 0.5s ease;
+      white-space: nowrap;
+    }
+
+    /* Notification toast */
+    .desktop-toast {
+      position: absolute;
+      top: 50%;
+      left: 50%;
+      transform: translate(-50%, -50%) scale(0.95);
+      background: #FFFFFF;
+      border-left: 4px solid var(--terracotta);
+      padding: 14px 20px;
+      border-radius: 12px;
+      box-shadow: 0 16px 40px rgba(0, 0, 0, 0.08);
+      font-size: 0.85rem;
+      color: var(--text);
+      opacity: 0;
+      pointer-events: none;
+      transition: all 0.5s cubic-bezier(0.16, 1, 0.3, 1);
+      white-space: nowrap;
+    }
+
+    .desktop-toast strong {
+      display: block;
+      font-size: 0.88rem;
+      color: var(--text);
+    }
+    .desktop-toast span {
+      font-size: 0.75rem;
+      color: var(--text-muted);
+    }
+
+    /* Story Text Stage */
+    .story-copy-stage {
+      position: relative;
+      width: 100%;
+      max-width: 760px;
+      text-align: center;
+      min-height: 180px;
+    }
+
+    .story-step {
+      position: absolute;
+      top: 0;
+      left: 0;
+      width: 100%;
+      opacity: 0;
+      transform: translateY(28px);
+      transition: opacity 0.5s cubic-bezier(0.16, 1, 0.3, 1), transform 0.5s cubic-bezier(0.16, 1, 0.3, 1);
+      pointer-events: none;
+    }
+
+    .story-step.active {
+      opacity: 1;
+      transform: translateY(0);
+      pointer-events: auto;
+    }
+
+    .step-counter {
+      font-family: var(--mono);
+      font-size: 0.8rem;
+      font-weight: 600;
+      letter-spacing: 0.1em;
+      color: var(--terracotta);
+      margin-bottom: 12px;
+      text-transform: uppercase;
+    }
+
+    .step-headline {
+      font-size: clamp(2.4rem, 5.5vw, 4.2rem);
       font-weight: 800;
       letter-spacing: -0.04em;
-      line-height: 1.04;
-      max-width: 920px;
-      margin-bottom: 24px;
+      line-height: 1.08;
+      margin-bottom: 14px;
+    }
+
+    .step-desc {
+      font-size: clamp(1.1rem, 2vw, 1.35rem);
+      color: var(--text-muted);
+      max-width: 540px;
+      margin: 0 auto;
+    }
+
+    /* Story Progress Bar */
+    .story-progress-dots {
+      position: absolute;
+      bottom: 40px;
+      display: flex;
+      gap: 10px;
+    }
+
+    .progress-dot {
+      width: 32px;
+      height: 3px;
+      background: var(--border);
+      border-radius: 999px;
+      transition: background 0.3s ease, width 0.3s ease;
+    }
+
+    .progress-dot.active {
+      background: var(--terracotta);
+      width: 48px;
+    }
+
+    /* SCENE 3: PURE TYPOGRAPHIC NUMBERS */
+    .numbers-section {
+      padding: 160px 24px;
+      max-width: 960px;
+      margin: 0 auto;
+    }
+
+    .number-row {
+      display: flex;
+      flex-direction: column;
+      padding: 56px 0;
+      border-bottom: 1px solid var(--border);
+      opacity: 0.18;
+      transform: translateY(20px);
+      transition: opacity 0.7s ease, transform 0.7s ease;
+    }
+
+    .number-row.revealed {
+      opacity: 1;
+      transform: translateY(0);
+    }
+
+    @media (min-width: 640px) {
+      .number-row {
+        flex-direction: row;
+        justify-content: space-between;
+        align-items: baseline;
+      }
+    }
+
+    .number-big {
+      font-size: clamp(3.6rem, 7.5vw, 6.4rem);
+      font-weight: 800;
+      letter-spacing: -0.05em;
+      line-height: 0.95;
       color: var(--text);
     }
 
-    .hero-headline .accent {
+    .number-big span {
       color: var(--terracotta);
     }
 
-    .hero-subhead {
-      font-size: clamp(1.1rem, 2.2vw, 1.45rem);
-      color: var(--text-muted);
-      max-width: 620px;
-      margin-bottom: 44px;
-      font-weight: 400;
-      letter-spacing: -0.01em;
+    .number-meta {
+      text-align: left;
+      margin-top: 14px;
     }
 
-    .hero-install-pill {
+    @media (min-width: 640px) {
+      .number-meta {
+        text-align: right;
+        margin-top: 0;
+      }
+    }
+
+    .number-title {
+      font-size: 1.4rem;
+      font-weight: 700;
+      letter-spacing: -0.02em;
+      color: var(--text);
+    }
+
+    .number-desc {
+      font-size: 1rem;
+      color: var(--text-muted);
+      margin-top: 4px;
+    }
+
+    /* SCENE 4: ONE CLICK INSTALL */
+    .install-section {
+      min-height: 90vh;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      text-align: center;
+      padding: 120px 24px;
+      position: relative;
+    }
+
+    .install-headline {
+      font-size: clamp(2.8rem, 6vw, 5.2rem);
+      font-weight: 800;
+      letter-spacing: -0.04em;
+      line-height: 1.05;
+      margin-bottom: 20px;
+    }
+
+    .install-sub {
+      font-size: 1.25rem;
+      color: var(--text-muted);
+      margin-bottom: 48px;
+    }
+
+    .command-box {
       display: inline-flex;
       align-items: center;
-      gap: 14px;
-      background: var(--bg-surface);
+      gap: 16px;
+      background: #FFFFFF;
       border: 1px solid var(--border);
-      padding: 10px 18px 10px 22px;
+      padding: 16px 24px;
       border-radius: 999px;
       font-family: var(--mono);
-      font-size: 0.88rem;
-      color: var(--text);
-      box-shadow: 0 4px 16px rgba(0, 0, 0, 0.03);
+      font-size: clamp(0.85rem, 1.8vw, 1rem);
+      box-shadow: 0 10px 32px rgba(0, 0, 0, 0.04);
       cursor: pointer;
       user-select: none;
-      transition: all 0.2s ease;
+      transition: all 0.25s ease;
+      margin-bottom: 36px;
+      max-width: 100%;
+      overflow-x: auto;
     }
 
-    .hero-install-pill:hover {
+    .command-box:hover {
       border-color: var(--terracotta);
-      box-shadow: 0 6px 24px var(--terracotta-glow);
+      box-shadow: 0 12px 36px var(--terracotta-glow);
       transform: translateY(-2px);
     }
 
-    .hero-install-pill .prompt {
+    .command-box .dollar {
       color: var(--terracotta);
       font-weight: 600;
     }
 
-    .copy-btn {
+    .copy-pill {
       background: var(--terracotta-light);
       color: var(--terracotta);
       border: none;
-      padding: 6px 12px;
+      padding: 6px 14px;
       border-radius: 999px;
-      font-size: 0.75rem;
-      font-weight: 600;
+      font-size: 0.8rem;
+      font-weight: 700;
       font-family: var(--sans);
       cursor: pointer;
       display: flex;
       align-items: center;
-      gap: 5px;
-      transition: background 0.2s ease;
-    }
-
-    .copy-btn:hover {
-      background: var(--terracotta);
-      color: #fff;
-    }
-
-    .scroll-indicator {
-      position: absolute;
-      bottom: 30px;
-      display: flex;
-      flex-direction: column;
-      align-items: center;
-      gap: 8px;
-      font-size: 0.75rem;
-      font-family: var(--mono);
-      text-transform: uppercase;
-      letter-spacing: 0.1em;
-      color: var(--text-muted);
-      opacity: 0.7;
-      animation: bounceIndicator 2.4s ease-in-out infinite;
-    }
-
-    @keyframes bounceIndicator {
-      0%, 20%, 50%, 80%, 100% { transform: translateY(0); }
-      40% { transform: translateY(6px); }
-      60% { transform: translateY(3px); }
-    }
-
-    /* SECTION 2: SCROLL-DRIVEN PROBLEM STATEMENTS */
-    .statement-section {
-      min-height: 120vh;
-      display: flex;
-      flex-direction: column;
-      justify-content: center;
-      align-items: center;
-      padding: 140px 24px;
-      position: relative;
-    }
-
-    .statement-container {
-      max-width: 860px;
-      display: flex;
-      flex-direction: column;
-      gap: 48px;
-    }
-
-    .statement-line {
-      font-size: clamp(2rem, 4.5vw, 3.8rem);
-      font-weight: 700;
-      letter-spacing: -0.035em;
-      line-height: 1.2;
-      color: var(--text-ghost);
-      transition: color 0.4s ease;
-    }
-
-    .statement-line.lit {
-      color: var(--text);
-    }
-
-    .statement-line.lit .highlight {
-      color: var(--terracotta);
-    }
-
-    /* SECTION 3: THE 4-STEP RITUAL (Sticky presentation) */
-    .ritual-section {
-      position: relative;
-      padding: 100px 24px 140px;
-      max-width: 1100px;
-      margin: 0 auto;
-    }
-
-    .section-eyebrow {
-      font-family: var(--mono);
-      font-size: 0.75rem;
-      text-transform: uppercase;
-      letter-spacing: 0.12em;
-      color: var(--terracotta);
-      font-weight: 600;
-      margin-bottom: 12px;
-    }
-
-    .section-title {
-      font-size: clamp(2rem, 4vw, 3.4rem);
-      font-weight: 800;
-      letter-spacing: -0.03em;
-      line-height: 1.1;
-      margin-bottom: 70px;
-    }
-
-    .ritual-grid {
-      display: grid;
-      grid-template-columns: 1fr;
-      gap: 28px;
-    }
-
-    @media (min-width: 768px) {
-      .ritual-grid {
-        grid-template-columns: repeat(2, 1fr);
-        gap: 32px;
-      }
-    }
-
-    .ritual-card {
-      background: var(--bg-surface);
-      border: 1px solid var(--border);
-      border-radius: 24px;
-      padding: 44px 38px;
-      display: flex;
-      flex-direction: column;
-      justify-content: space-between;
-      min-height: 360px;
-      position: relative;
-      overflow: hidden;
-      transition: all 0.4s cubic-bezier(0.16, 1, 0.3, 1);
-    }
-
-    .ritual-card:hover {
-      border-color: var(--terracotta);
-      box-shadow: 0 16px 40px rgba(217, 119, 87, 0.08);
-      transform: translateY(-4px);
-    }
-
-    .ritual-card-num {
-      font-family: var(--mono);
-      font-size: 0.85rem;
-      font-weight: 600;
-      color: var(--terracotta);
-      margin-bottom: 24px;
-    }
-
-    .ritual-card-title {
-      font-size: 2.2rem;
-      font-weight: 800;
-      letter-spacing: -0.03em;
-      line-height: 1.15;
-      margin-bottom: 16px;
-    }
-
-    .ritual-card-desc {
-      font-size: 1.1rem;
-      color: var(--text-muted);
-      line-height: 1.5;
-      margin-bottom: 32px;
-      max-width: 360px;
-    }
-
-    /* Minimalist Card Visual Emblems */
-    .ritual-visual {
-      height: 100px;
-      display: flex;
-      align-items: center;
-      position: relative;
-    }
-
-    /* Visual 1: Drop chip hovering */
-    .drop-visual-chip {
-      background: var(--bg-subtle);
-      border: 1px dashed var(--border-dark);
-      padding: 10px 18px;
-      border-radius: 12px;
-      font-family: var(--mono);
-      font-size: 0.8rem;
-      color: var(--text);
-      display: flex;
-      align-items: center;
-      gap: 10px;
-      box-shadow: 0 6px 18px rgba(0, 0, 0, 0.04);
-      animation: floatChip 3s ease-in-out infinite;
-    }
-
-    @keyframes floatChip {
-      0%, 100% { transform: translateY(0); }
-      50% { transform: translateY(-8px); }
-    }
-
-    /* Visual 2: Time selector wheel */
-    .time-visual-pills {
-      display: flex;
-      gap: 8px;
-      flex-wrap: wrap;
-    }
-
-    .time-visual-pill {
-      font-family: var(--mono);
-      font-size: 0.75rem;
-      padding: 6px 14px;
-      border-radius: 999px;
-      background: var(--bg-subtle);
-      border: 1px solid var(--border);
-      color: var(--text-muted);
-    }
-
-    .time-visual-pill.active {
-      background: var(--terracotta-light);
-      border-color: var(--terracotta);
-      color: var(--terracotta);
-      font-weight: 600;
-    }
-
-    /* Visual 3: Minimizes to zero */
-    .vanish-visual-dot {
-      width: 44px;
-      height: 44px;
-      border-radius: 50%;
-      background: var(--terracotta-light);
-      border: 2px solid var(--terracotta);
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      position: relative;
-    }
-
-    .vanish-visual-dot::after {
-      content: "";
-      width: 10px;
-      height: 10px;
-      background: var(--terracotta);
-      border-radius: 50%;
-      animation: ping 2s cubic-bezier(0, 0, 0.2, 1) infinite;
-    }
-
-    @keyframes ping {
-      75%, 100% { transform: scale(2.4); opacity: 0; }
-    }
-
-    /* Visual 4: Native notification */
-    .notif-visual-toast {
-      background: #FFFFFF;
-      border: 1px solid var(--border);
-      border-left: 4px solid var(--terracotta);
-      border-radius: 10px;
-      padding: 10px 16px;
-      box-shadow: 0 8px 24px rgba(0, 0, 0, 0.06);
-      width: 100%;
-      max-width: 280px;
-    }
-
-    .notif-title {
-      font-weight: 700;
-      font-size: 0.8rem;
-      color: var(--text);
-    }
-
-    .notif-subtitle {
-      font-size: 0.72rem;
-      color: var(--text-muted);
-    }
-
-    /* SECTION 4: THE HARDWARE NUMBERS */
-    .metrics-section {
-      padding: 140px 24px;
-      max-width: 1040px;
-      margin: 0 auto;
-      text-align: center;
-    }
-
-    .metrics-header {
-      margin-bottom: 70px;
-    }
-
-    .metrics-grid {
-      display: grid;
-      grid-template-columns: repeat(2, 1fr);
-      gap: 40px 24px;
-    }
-
-    @media (min-width: 768px) {
-      .metrics-grid {
-        grid-template-columns: repeat(4, 1fr);
-      }
-    }
-
-    .metric-item {
-      display: flex;
-      flex-direction: column;
-      align-items: center;
-    }
-
-    .metric-val {
-      font-size: clamp(3rem, 5vw, 4.8rem);
-      font-weight: 800;
-      letter-spacing: -0.04em;
-      line-height: 1;
-      color: var(--text);
-      margin-bottom: 12px;
-      font-feature-settings: "tnum";
-    }
-
-    .metric-label {
-      font-size: 1rem;
-      font-weight: 600;
-      color: var(--text);
-      margin-bottom: 4px;
-    }
-
-    .metric-sub {
-      font-size: 0.85rem;
-      color: var(--text-muted);
-    }
-
-    /* SECTION 5: ONE COMMAND INSTALL & RELEASES */
-    .install-section {
-      padding: 120px 24px 160px;
-      text-align: center;
-      background: radial-gradient(circle at center top, var(--terracotta-light) 0%, transparent 60%);
-    }
-
-    .install-box {
-      max-width: 760px;
-      margin: 0 auto;
-      background: var(--bg-surface);
-      border: 1px solid var(--border);
-      border-radius: 28px;
-      padding: 56px 40px;
-      box-shadow: 0 16px 48px rgba(0, 0, 0, 0.04);
-    }
-
-    .install-box h2 {
-      font-size: clamp(2.2rem, 4vw, 3.4rem);
-      font-weight: 800;
-      letter-spacing: -0.035em;
-      margin-bottom: 16px;
-    }
-
-    .install-box p {
-      color: var(--text-muted);
-      font-size: 1.15rem;
-      margin-bottom: 36px;
-    }
-
-    .install-cli-card {
-      background: var(--bg);
-      border: 1px solid var(--border-dark);
-      border-radius: 16px;
-      padding: 16px 20px;
-      display: flex;
-      align-items: center;
-      justify-content: space-between;
-      gap: 16px;
-      font-family: var(--mono);
-      font-size: 0.9rem;
-      margin-bottom: 32px;
-      overflow-x: auto;
-    }
-
-    .install-cli-text {
-      color: var(--text);
+      gap: 6px;
       white-space: nowrap;
+      transition: all 0.2s ease;
     }
 
-    .install-cli-card button {
-      flex-shrink: 0;
-    }
-
-    .install-btn-group {
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      gap: 16px;
-      flex-wrap: wrap;
-    }
-
-    .btn-download {
-      display: inline-flex;
-      align-items: center;
-      gap: 10px;
+    .copy-pill:hover {
       background: var(--terracotta);
       color: #fff;
-      padding: 14px 28px;
-      border-radius: 999px;
-      text-decoration: none;
-      font-weight: 700;
-      font-size: 0.95rem;
-      box-shadow: 0 6px 20px var(--terracotta-glow);
-      transition: all 0.2s ease;
     }
 
-    .btn-download:hover {
-      background: var(--terracotta-dark);
-      transform: translateY(-2px);
-      box-shadow: 0 8px 28px rgba(217, 119, 87, 0.35);
+    .action-links {
+      display: flex;
+      gap: 16px;
+      flex-wrap: wrap;
+      justify-content: center;
     }
 
-    .btn-github {
+    .btn-action {
       display: inline-flex;
       align-items: center;
-      gap: 10px;
-      background: var(--bg);
-      border: 1px solid var(--border);
-      color: var(--text);
+      gap: 8px;
       padding: 14px 28px;
       border-radius: 999px;
-      text-decoration: none;
-      font-weight: 600;
       font-size: 0.95rem;
+      font-weight: 700;
+      text-decoration: none;
       transition: all 0.2s ease;
     }
 
-    .btn-github:hover {
+    .btn-action-primary {
+      background: var(--text);
+      color: #fff;
+    }
+
+    .btn-action-primary:hover {
+      background: #000;
+      transform: translateY(-2px);
+    }
+
+    .btn-action-subtle {
+      background: transparent;
+      color: var(--text);
+      border: 1px solid var(--border);
+    }
+
+    .btn-action-subtle:hover {
       border-color: var(--text);
       transform: translateY(-2px);
     }
 
-    /* FOOTER */
+    /* Minimal footer */
     footer {
-      border-top: 1px solid var(--border);
-      padding: 40px 24px;
-      display: flex;
-      flex-direction: column;
-      align-items: center;
-      justify-content: center;
-      gap: 12px;
+      padding: 40px 24px 60px;
+      text-align: center;
       font-size: 0.85rem;
       color: var(--text-muted);
-      text-align: center;
+      display: flex;
+      flex-direction: column;
+      gap: 8px;
     }
 
     footer a {
@@ -704,41 +567,152 @@
 </head>
 <body>
 
-  <!-- Floating Navigation -->
-  <nav>
-    <a href="#" class="brand">
-      <img src="logo.svg" alt="ForwardBin Icon" class="brand-icon">
+  <!-- Floating Brand Bar -->
+  <header>
+    <a href="#" class="brand-wrap">
+      <img src="logo.svg" alt="ForwardBin Logo">
       <span>ForwardBin</span>
-      <span class="nav-tag">v1.0.0</span>
     </a>
-    <div class="nav-actions">
-      <a href="https://github.com/s-chudmunge/forwardbin" target="_blank" rel="noopener" class="nav-btn nav-btn-subtle">GitHub</a>
-      <a href="#install" class="nav-btn nav-btn-primary">Get ForwardBin</a>
+    <div class="header-links">
+      <a href="https://github.com/s-chudmunge/forwardbin" target="_blank" rel="noopener" class="header-link">GitHub</a>
+      <a href="#install" class="header-link">Install</a>
     </div>
-  </nav>
+  </header>
 
   <!-- SCENE 1: HERO -->
-  <section class="hero-section">
-    <div class="hero-hopper-container reveal">
-      <div class="hero-hopper-halo"></div>
-      <img src="logo.svg" alt="ForwardBin Terracotta Hopper" class="hero-hopper-svg">
-    </div>
-
-    <h1 class="hero-headline reveal reveal-delay-1">
-      Drop it. Forget it.<br>
-      <span class="accent">We’ll remind you.</span>
+  <section class="hero">
+    <div class="hero-tag">Floating drop bin for Linux</div>
+    <h1 class="hero-title">
+      Drop it. Forget it.
+      <span>We will remind you.</span>
     </h1>
-
-    <p class="hero-subhead reveal reveal-delay-2">
-      A lightweight floating drop bin for Linux.<br>
-      Drag any link, snippet, or file—forward it to your future self.
+    <p class="hero-sub">
+      Drag any link, text, or file. Schedule it into your future.
     </p>
 
-    <div class="hero-install-pill reveal reveal-delay-3" id="quickInstallPill">
-      <span class="prompt">$</span>
-      <span class="cmd">curl -sSL https://git.io/forwardbin | bash</span>
-      <button class="copy-btn" id="heroCopyBtn" aria-label="Copy installation command">
-        <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+    <div class="hero-scroll-prompt">
+      <span>Scroll to see how it works</span>
+      <span>↓</span>
+    </div>
+  </section>
+
+  <!-- SCENE 2: SCROLL-PINNED STORYTELLER (No cards, pure scroll morphing) -->
+  <div class="story-track" id="storyTrack">
+    <div class="story-sticky">
+      
+      <!-- Visual Morph Center -->
+      <div class="stage-visual">
+        <div class="floating-drop-item" id="dropItem">
+          arxiv.org/abs/2403.05530
+        </div>
+        
+        <div class="stage-logo-wrap" id="stageLogo">
+          <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100">
+            <g fill="none" stroke="#D97757" stroke-width="11.5" stroke-linecap="round" stroke-linejoin="round">
+              <path d="M 72.82 76.00 A 33 33 0 1 1 72.82 24.00" />
+              <path d="M 44.5 34 L 60.5 50 L 44.5 66" />
+              <path d="M 64.5 34 L 80.5 50 L 64.5 66" />
+            </g>
+          </svg>
+        </div>
+
+        <div class="time-badge" id="timeBadge">
+          Tomorrow 9:00 AM
+        </div>
+
+        <div class="desktop-toast" id="desktopToast">
+          <strong>ForwardBin</strong>
+          <span>arxiv.org/abs/2403.05530 is ready.</span>
+        </div>
+      </div>
+
+      <!-- Text Stages -->
+      <div class="story-copy-stage">
+        <!-- Step 1 -->
+        <div class="story-step active" id="step1">
+          <div class="step-counter">01 / Intake</div>
+          <div class="step-headline">Drop anything.</div>
+          <div class="step-desc">A browser link. A code snippet. A file you cannot deal with right now.</div>
+        </div>
+
+        <!-- Step 2 -->
+        <div class="story-step" id="step2">
+          <div class="step-counter">02 / Schedule</div>
+          <div class="step-headline">Pick a time.</div>
+          <div class="step-desc">In two hours. Tomorrow morning. Next Monday. Or let local NLP detect the date.</div>
+        </div>
+
+        <!-- Step 3 -->
+        <div class="story-step" id="step3">
+          <div class="step-counter">03 / Silence</div>
+          <div class="step-headline">It disappears.</div>
+          <div class="step-desc">Zero tabs. Zero mental clutter. It vanishes from sight until you are ready.</div>
+        </div>
+
+        <!-- Step 4 -->
+        <div class="story-step" id="step4">
+          <div class="step-counter">04 / Return</div>
+          <div class="step-headline">Back when needed.</div>
+          <div class="step-desc">A native Linux notification chimes with instant open or snooze actions.</div>
+        </div>
+      </div>
+
+      <!-- Progress Indicators -->
+      <div class="story-progress-dots">
+        <div class="progress-dot active" id="dot1"></div>
+        <div class="progress-dot" id="dot2"></div>
+        <div class="progress-dot" id="dot3"></div>
+        <div class="progress-dot" id="dot4"></div>
+      </div>
+
+    </div>
+  </div>
+
+  <!-- SCENE 3: MASSIVE ONE-LINER NUMBERS -->
+  <section class="numbers-section">
+    <div class="number-row" data-number-row>
+      <div class="number-big">7.8<span>MB</span></div>
+      <div class="number-meta">
+        <div class="number-title">Total Memory</div>
+        <div class="number-desc">Zero Electron runtime. Pure native binary.</div>
+      </div>
+    </div>
+
+    <div class="number-row" data-number-row>
+      <div class="number-big">4<span>ms</span></div>
+      <div class="number-meta">
+        <div class="number-title">Drop Latency</div>
+        <div class="number-desc">Direct write to local SQLite WAL.</div>
+      </div>
+    </div>
+
+    <div class="number-row" data-number-row>
+      <div class="number-big">0.0<span>%</span></div>
+      <div class="number-meta">
+        <div class="number-title">Idle CPU</div>
+        <div class="number-desc">Event driven. Sleeps until you interact.</div>
+      </div>
+    </div>
+
+    <div class="number-row" data-number-row>
+      <div class="number-big">100<span>%</span></div>
+      <div class="number-meta">
+        <div class="number-title">Local and Private</div>
+        <div class="number-desc">No accounts. No telemetry. No servers.</div>
+      </div>
+    </div>
+  </section>
+
+  <!-- SCENE 4: ONE CLICK INSTALL -->
+  <section class="install-section" id="install">
+    <h2 class="install-headline">Ready in three seconds.</h2>
+    <p class="install-sub">Works on Fedora, Ubuntu, Debian, Arch, and Linux Mint.</p>
+
+    <div class="command-box" id="cmdBox">
+      <span class="dollar">$</span>
+      <span id="cmdText">curl -sSL https://raw.githubusercontent.com/s-chudmunge/forwardbin/main/install.sh | bash</span>
+      <button class="copy-pill" id="copyBtn">
+        <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5">
           <rect x="9" y="9" width="13" height="13" rx="2" ry="2"></rect>
           <path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"></path>
         </svg>
@@ -746,240 +720,162 @@
       </button>
     </div>
 
-    <div class="scroll-indicator">
-      <span>Scroll to explore</span>
-      <span>↓</span>
-    </div>
-  </section>
-
-  <!-- SCENE 2: THE PROBLEM (Scroll-driven illuminate) -->
-  <section class="statement-section" id="statements">
-    <div class="statement-container">
-      <div class="statement-line" data-scroll-highlight>
-        You have 40 tabs open because <span class="highlight">“you’ll read them later.”</span>
-      </div>
-      <div class="statement-line" data-scroll-highlight>
-        Your clipboard is full of links you <span class="highlight">don’t want to lose.</span>
-      </div>
-      <div class="statement-line" data-scroll-highlight>
-        Your desktop is <span class="highlight">not a to-do list.</span>
-      </div>
-      <div class="statement-line" data-scroll-highlight>
-        You just need a bin that <span class="highlight">holds it until you’re ready.</span>
-      </div>
-    </div>
-  </section>
-
-  <!-- SCENE 3: THE 4-STEP RITUAL -->
-  <section class="ritual-section">
-    <div class="reveal">
-      <div class="section-eyebrow">// How it works</div>
-      <h2 class="section-title">One flick of the wrist.</h2>
-    </div>
-
-    <div class="ritual-grid">
-      <!-- Step 1 -->
-      <div class="ritual-card reveal">
-        <div>
-          <div class="ritual-card-num">01 / DROP</div>
-          <h3 class="ritual-card-title">Drag anything to the bin.</h3>
-          <p class="ritual-card-desc">Links from your browser, selected text, code snippets, or local files.</p>
-        </div>
-        <div class="ritual-visual">
-          <div class="drop-visual-chip">
-            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="var(--terracotta)" stroke-width="2.5">
-              <path d="M10 13a5 5 0 0 0 7.54.54l3-3a5 5 0 0 0-7.07-7.07l-1.72 1.71"></path>
-              <path d="M14 11a5 5 0 0 0-7.54-.54l-3 3a5 5 0 0 0 7.07 7.07l1.71-1.71"></path>
-            </svg>
-            <span>arxiv.org/abs/2403.05530</span>
-          </div>
-        </div>
-      </div>
-
-      <!-- Step 2 -->
-      <div class="ritual-card reveal reveal-delay-1">
-        <div>
-          <div class="ritual-card-num">02 / SCHEDULE</div>
-          <h3 class="ritual-card-title">Choose when you want it.</h3>
-          <p class="ritual-card-desc">Click “In 2 hours”, “Tomorrow 9am”, or let local NLP parse natural language automatically.</p>
-        </div>
-        <div class="ritual-visual">
-          <div class="time-visual-pills">
-            <span class="time-visual-pill">+2h</span>
-            <span class="time-visual-pill active">Tomorrow 9am</span>
-            <span class="time-visual-pill">Monday</span>
-          </div>
-        </div>
-      </div>
-
-      <!-- Step 3 -->
-      <div class="ritual-card reveal">
-        <div>
-          <div class="ritual-card-num">03 / SILENCE</div>
-          <h3 class="ritual-card-title">It vanishes completely.</h3>
-          <p class="ritual-card-desc">Zero clutter. Zero cognitive overload. Out of your sight until the exact moment you asked.</p>
-        </div>
-        <div class="ritual-visual">
-          <div class="vanish-visual-dot"></div>
-        </div>
-      </div>
-
-      <!-- Step 4 -->
-      <div class="ritual-card reveal reveal-delay-1">
-        <div>
-          <div class="ritual-card-num">04 / RETURN</div>
-          <h3 class="ritual-card-title">Arrives right on time.</h3>
-          <p class="ritual-card-desc">A native Linux desktop notification pops up with 1-click open or snooze actions.</p>
-        </div>
-        <div class="ritual-visual">
-          <div class="notif-visual-toast">
-            <div class="notif-title">ForwardBin • Return</div>
-            <div class="notif-subtitle">arxiv.org/abs/2403.05530 is ready.</div>
-          </div>
-        </div>
-      </div>
-    </div>
-  </section>
-
-  <!-- SCENE 4: THE HARDWARE NUMBERS -->
-  <section class="metrics-section">
-    <div class="metrics-header reveal">
-      <div class="section-eyebrow">// Specification Ledger</div>
-      <h2 class="section-title" style="margin-bottom: 12px;">Engineered for speed, not cloud subscriptions.</h2>
-      <p style="color: var(--text-muted); font-size: 1.15rem;">No background browser instances. No telemetry.</p>
-    </div>
-
-    <div class="metrics-grid">
-      <div class="metric-item reveal">
-        <div class="metric-val">7.8<span style="font-size: 2.2rem; color: var(--terracotta);">MB</span></div>
-        <div class="metric-label">Memory Footprint</div>
-        <div class="metric-sub">Zero Electron runtime</div>
-      </div>
-
-      <div class="metric-item reveal reveal-delay-1">
-        <div class="metric-val">4<span style="font-size: 2.2rem; color: var(--terracotta);">ms</span></div>
-        <div class="metric-label">Ingestion Latency</div>
-        <div class="metric-sub">Instant SQLite3 WAL append</div>
-      </div>
-
-      <div class="metric-item reveal reveal-delay-2">
-        <div class="metric-val">0.0<span style="font-size: 2.2rem; color: var(--terracotta);">%</span></div>
-        <div class="metric-label">Idle CPU</div>
-        <div class="metric-sub">Event-driven Unix sockets</div>
-      </div>
-
-      <div class="metric-item reveal reveal-delay-3">
-        <div class="metric-val">100<span style="font-size: 2.2rem; color: var(--terracotta);">%</span></div>
-        <div class="metric-label">Local & Private</div>
-        <div class="metric-sub">No logins. Stays on device.</div>
-      </div>
-    </div>
-  </section>
-
-  <!-- SCENE 5: ONE COMMAND INSTALL -->
-  <section class="install-section" id="install">
-    <div class="install-box reveal">
-      <div class="section-eyebrow">// Get started</div>
-      <h2>Install in 3 seconds.</h2>
-      <p>Self-contained executable for Ubuntu, Fedora, Debian, Arch, and Linux Mint.</p>
-
-      <div class="install-cli-card">
-        <span class="install-cli-text" id="installCmdText">curl -sSL https://raw.githubusercontent.com/s-chudmunge/forwardbin/main/install.sh | bash</span>
-        <button class="copy-btn" id="installCopyBtn" aria-label="Copy curl command">
-          <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5">
-            <rect x="9" y="9" width="13" height="13" rx="2" ry="2"></rect>
-            <path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"></path>
-          </svg>
-          <span>Copy</span>
-        </button>
-      </div>
-
-      <div class="install-btn-group">
-        <a href="https://github.com/s-chudmunge/forwardbin/releases/download/v1.0.0/forwardbin-installer.run" class="btn-download">
-          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2">
-            <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path>
-            <polyline points="7 10 12 15 17 10"></polyline>
-            <line x1="12" y1="15" x2="12" y2="3"></line>
-          </svg>
-          Download .run Installer
-        </a>
-        <a href="https://github.com/s-chudmunge/forwardbin" target="_blank" rel="noopener" class="btn-github">
-          <svg width="18" height="18" viewBox="0 0 24 24" fill="currentColor">
-            <path d="M12 0C5.37 0 0 5.37 0 12c0 5.31 3.435 9.795 8.205 11.385.6.105.825-.255.825-.57 0-.285-.015-1.23-.015-2.235-3.015.555-3.795-.735-4.035-1.41-.135-.345-.72-1.41-1.23-1.695-.42-.225-1.02-.78-.015-.795.945-.015 1.62.87 1.845 1.23 1.08 1.815 2.805 1.305 3.495.99.105-.78.42-1.305.765-1.605-2.67-.3-5.46-1.335-5.46-5.925 0-1.305.465-2.385 1.23-3.225-.12-.3-.54-1.53.12-3.18 0 0 1.005-.315 3.3 1.23.96-.27 1.98-.405 3-.405s2.04.135 3 .405c2.295-1.56 3.3-1.23 3.3-1.23.66 1.65.24 2.88.12 3.18.765.84 1.23 1.905 1.23 3.225 0 4.605-2.805 5.625-5.475 5.925.435.375.81 1.095.81 2.22 0 1.605-.015 2.895-.015 3.3 0 .315.225.69.825.57A12.02 12.02 0 0024 12c0-6.63-5.37-12-12-12z"/>
-          </svg>
-          View Source (v1.0.0)
-        </a>
-      </div>
+    <div class="action-links">
+      <a href="https://github.com/s-chudmunge/forwardbin/releases/download/v1.0.0/forwardbin-installer.run" class="btn-action btn-action-primary">
+        Download .run installer
+      </a>
+      <a href="https://github.com/s-chudmunge/forwardbin" target="_blank" rel="noopener" class="btn-action btn-action-subtle">
+        GitHub repository
+      </a>
     </div>
   </section>
 
   <!-- FOOTER -->
   <footer>
-    <div>ForwardBin is free and open-source software under the MIT License.</div>
-    <div>Built in pure Rust & GTK by <a href="https://github.com/s-chudmunge" target="_blank" rel="noopener">Sankalp Chudmunge</a>.</div>
+    <div>ForwardBin is open source software under the MIT License.</div>
+    <div>Crafted for Linux by <a href="https://github.com/s-chudmunge" target="_blank" rel="noopener">Sankalp Chudmunge</a></div>
   </footer>
 
   <script>
-    // 1. Scroll-reveal on viewport enter using IntersectionObserver
-    const revealElements = document.querySelectorAll('.reveal');
-    const observer = new IntersectionObserver((entries) => {
+    // 1. PINNED SCROLL STORYTELLER
+    const track = document.getElementById('storyTrack');
+    const steps = [
+      document.getElementById('step1'),
+      document.getElementById('step2'),
+      document.getElementById('step3'),
+      document.getElementById('step4')
+    ];
+    const dots = [
+      document.getElementById('dot1'),
+      document.getElementById('dot2'),
+      document.getElementById('dot3'),
+      document.getElementById('dot4')
+    ];
+
+    const dropItem = document.getElementById('dropItem');
+    const stageLogo = document.getElementById('stageLogo');
+    const timeBadge = document.getElementById('timeBadge');
+    const desktopToast = document.getElementById('desktopToast');
+
+    function updateStory() {
+      const rect = track.getBoundingClientRect();
+      const trackHeight = track.offsetHeight - window.innerHeight;
+      
+      // Calculate scroll progress within the track: 0.0 to 1.0
+      let progress = -rect.top / trackHeight;
+      progress = Math.max(0, Math.min(1, progress));
+
+      // 4 discrete states
+      let activeIndex = 0;
+      if (progress < 0.25) {
+        activeIndex = 0;
+      } else if (progress < 0.50) {
+        activeIndex = 1;
+      } else if (progress < 0.75) {
+        activeIndex = 2;
+      } else {
+        activeIndex = 3;
+      }
+
+      // Update text and dots
+      steps.forEach((step, idx) => {
+        if (idx === activeIndex) {
+          step.classList.add('active');
+        } else {
+          step.classList.remove('active');
+        }
+      });
+
+      dots.forEach((dot, idx) => {
+        if (idx === activeIndex) {
+          dot.classList.add('active');
+        } else {
+          dot.classList.remove('active');
+        }
+      });
+
+      // Visual stage transformations
+      if (activeIndex === 0) {
+        // Drop state: chip descends into hopper
+        dropItem.style.opacity = '1';
+        dropItem.style.transform = 'translateX(-50%) translateY(20px)';
+        stageLogo.style.transform = 'scale(1)';
+        stageLogo.style.opacity = '1';
+        timeBadge.style.opacity = '0';
+        timeBadge.style.transform = 'translateX(-50%) scale(0.8)';
+        desktopToast.style.opacity = '0';
+        desktopToast.style.transform = 'translate(-50%, -50%) scale(0.95)';
+      } else if (activeIndex === 1) {
+        // Schedule state: chip absorbed, time badge appears
+        dropItem.style.opacity = '0';
+        dropItem.style.transform = 'translateX(-50%) translateY(70px)';
+        stageLogo.style.transform = 'scale(1.08)';
+        stageLogo.style.opacity = '1';
+        timeBadge.style.opacity = '1';
+        timeBadge.style.transform = 'translateX(-50%) scale(1)';
+        desktopToast.style.opacity = '0';
+        desktopToast.style.transform = 'translate(-50%, -50%) scale(0.95)';
+      } else if (activeIndex === 2) {
+        // Vanish state: hopper scales down and fades into calm
+        dropItem.style.opacity = '0';
+        timeBadge.style.opacity = '0';
+        stageLogo.style.transform = 'scale(0.35)';
+        stageLogo.style.opacity = '0.2';
+        desktopToast.style.opacity = '0';
+        desktopToast.style.transform = 'translate(-50%, -50%) scale(0.95)';
+      } else {
+        // Return state: notification toast pops up
+        dropItem.style.opacity = '0';
+        timeBadge.style.opacity = '0';
+        stageLogo.style.transform = 'scale(0.8)';
+        stageLogo.style.opacity = '0.5';
+        desktopToast.style.opacity = '1';
+        desktopToast.style.transform = 'translate(-50%, -50%) scale(1)';
+      }
+    }
+
+    window.addEventListener('scroll', updateStory, { passive: true });
+    window.addEventListener('resize', updateStory, { passive: true });
+    updateStory();
+
+    // 2. SCROLL REVEAL FOR NUMBERS
+    const numberRows = document.querySelectorAll('[data-number-row]');
+    const numObserver = new IntersectionObserver((entries) => {
       entries.forEach(entry => {
         if (entry.isIntersecting) {
-          entry.target.classList.add('active');
+          entry.target.classList.add('revealed');
+        } else {
+          entry.target.classList.remove('revealed');
         }
       });
     }, {
-      threshold: 0.15,
-      rootMargin: '0px 0px -50px 0px'
+      threshold: 0.35
     });
+    numberRows.forEach(row => numObserver.observe(row));
 
-    revealElements.forEach(el => observer.observe(el));
+    // 3. COPY TO CLIPBOARD
+    const copyBtn = document.getElementById('copyBtn');
+    const cmdBox = document.getElementById('cmdBox');
+    const textToCopy = 'curl -sSL https://raw.githubusercontent.com/s-chudmunge/forwardbin/main/install.sh | bash';
 
-    // 2. Scroll-driven illumination for Problem Statements
-    const highlightLines = document.querySelectorAll('[data-scroll-highlight]');
-    function checkHighlights() {
-      const triggerY = window.innerHeight * 0.72;
-      highlightLines.forEach(line => {
-        const rect = line.getBoundingClientRect();
-        if (rect.top <= triggerY && rect.bottom >= 0) {
-          line.classList.add('lit');
-        } else {
-          line.classList.remove('lit');
-        }
-      });
-    }
-    window.addEventListener('scroll', checkHighlights, { passive: true });
-    window.addEventListener('resize', checkHighlights, { passive: true });
-    checkHighlights();
-
-    // 3. Clipboard copy handlers
-    function setupCopy(btnId, text) {
-      const btn = document.getElementById(btnId);
-      if (!btn) return;
-      btn.addEventListener('click', (e) => {
-        e.stopPropagation();
-        navigator.clipboard.writeText(text).then(() => {
-          const original = btn.innerHTML;
-          btn.innerHTML = `
-            <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5">
-              <polyline points="20 6 9 17 4 12"></polyline>
-            </svg>
-            <span>Copied!</span>
-          `;
-          setTimeout(() => {
-            btn.innerHTML = original;
-          }, 2000);
-        });
+    function triggerCopy(e) {
+      if (e) e.stopPropagation();
+      navigator.clipboard.writeText(textToCopy).then(() => {
+        const originalHTML = copyBtn.innerHTML;
+        copyBtn.innerHTML = `
+          <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5">
+            <polyline points="20 6 9 17 4 12"></polyline>
+          </svg>
+          <span>Copied!</span>
+        `;
+        setTimeout(() => {
+          copyBtn.innerHTML = originalHTML;
+        }, 2000);
       });
     }
 
-    const commandStr = 'curl -sSL https://raw.githubusercontent.com/s-chudmunge/forwardbin/main/install.sh | bash';
-    setupCopy('heroCopyBtn', commandStr);
-    setupCopy('installCopyBtn', commandStr);
-
-    document.getElementById('quickInstallPill')?.addEventListener('click', () => {
-      document.getElementById('heroCopyBtn')?.click();
-    });
+    copyBtn.addEventListener('click', triggerCopy);
+    cmdBox.addEventListener('click', triggerCopy);
   </script>
 </body>
 </html>
