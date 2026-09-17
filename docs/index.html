@@ -3,16 +3,16 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>ForwardBin: The Ambient Desktop Jarvis</title>
-  <meta name="description" content="ForwardBin is an ambient desktop Jarvis for macOS and Linux. Drop anything now. Jarvis schedules it and delivers it back via native desktop alerts or curated email briefings.">
-  <meta property="og:title" content="ForwardBin: The Ambient Desktop Jarvis">
-  <meta property="og:description" content="Drop anything on your screen. Jarvis schedules it and delivers it back to your desktop or your inbox when you are ready.">
+  <title>ForwardBin: Ambient Desktop Jarvis for macOS and Linux</title>
+  <meta name="description" content="Drop anything now. Get it back when you actually have time. Ambient desktop Jarvis for macOS and Linux.">
+  <meta property="og:title" content="ForwardBin: Ambient Desktop Jarvis">
+  <meta property="og:description" content="Drop anything now. Get it back when you actually have time.">
   <meta property="og:image" content="https://s-chudmunge.github.io/forwardbin/bin_terracotta_preview.png">
   <link rel="icon" type="image/svg+xml" href="logo.svg">
 
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-  <link href="https://fonts.googleapis.com/css2?family=Instrument+Serif:ital@0;1&family=Plus+Jakarta+Sans:wght@300;400;500;600;700;800&family=JetBrains+Mono:wght@400;500;600&display=swap" rel="stylesheet">
+  <link href="https://fonts.googleapis.com/css2?family=Instrument+Serif:ital@0;1&family=Plus+Jakarta+Sans:wght@400;500;600;700;800&family=JetBrains+Mono:wght@400;500;600&display=swap" rel="stylesheet">
 
   <style>
     *, *::before, *::after {
@@ -24,16 +24,13 @@
     :root {
       --clay: #D97757;
       --clay-hover: #C36445;
-      --clay-soft: #FDF4F0;
-      --clay-glow: rgba(217, 119, 87, 0.2);
+      --clay-soft: #FDF3EE;
       --ink: #11100E;
-      --ink-subtle: #615D56;
-      --ink-ghost: #B5B0A6;
+      --ink-muted: #736E65;
       --paper: #FAF8F5;
       --sand: #F3EFE9;
-      --white: #FFFFFF;
       --border: #E8E4D9;
-      --border-strong: #D1CBC0;
+      --border-dark: #D4CEBF;
       --serif: 'Instrument Serif', Georgia, serif;
       --sans: 'Plus Jakarta Sans', -apple-system, BlinkMacSystemFont, sans-serif;
       --mono: 'JetBrains Mono', monospace;
@@ -49,7 +46,7 @@
 
     body {
       overflow-x: hidden;
-      line-height: 1.5;
+      line-height: 1.4;
     }
 
     /* Ambient texture */
@@ -58,34 +55,33 @@
       position: fixed;
       top: 0; left: 0; width: 100%; height: 100%;
       pointer-events: none;
-      opacity: 0.025;
+      opacity: 0.02;
       background-image: radial-gradient(#000 1px, transparent 1px);
       background-size: 24px 24px;
       z-index: 999;
     }
 
-    /* HEADER */
+    /* NAV */
     nav {
       position: fixed;
       top: 18px;
       left: 50%;
       transform: translateX(-50%);
-      width: calc(100% - 48px);
-      max-width: 1080px;
+      width: calc(100% - 40px);
+      max-width: 960px;
       display: flex;
       align-items: center;
       justify-content: space-between;
-      padding: 10px 22px;
+      padding: 10px 20px;
       background: rgba(250, 248, 245, 0.85);
-      backdrop-filter: blur(20px);
-      -webkit-backdrop-filter: blur(20px);
-      border: 1px solid rgba(232, 228, 217, 0.9);
+      backdrop-filter: blur(18px);
+      -webkit-backdrop-filter: blur(18px);
+      border: 1px solid rgba(232, 228, 217, 0.8);
       border-radius: 999px;
       z-index: 1000;
-      box-shadow: 0 4px 24px rgba(0, 0, 0, 0.03);
     }
 
-    .brand {
+    .nav-brand {
       display: flex;
       align-items: center;
       gap: 10px;
@@ -93,61 +89,56 @@
       color: var(--ink);
       font-weight: 700;
       font-size: 0.95rem;
-      letter-spacing: -0.01em;
     }
 
-    .brand-icon {
+    .nav-brand img {
       width: 24px;
       height: 24px;
     }
 
-    .nav-os-badge {
-      display: flex;
-      align-items: center;
-      gap: 6px;
+    .nav-platforms {
       font-family: var(--mono);
       font-size: 0.72rem;
+      color: var(--ink-muted);
       background: var(--sand);
-      color: var(--ink-subtle);
       padding: 4px 10px;
       border-radius: 999px;
-      border: 1px solid var(--border);
     }
 
     .nav-actions {
       display: flex;
       align-items: center;
-      gap: 10px;
+      gap: 12px;
     }
 
     .nav-btn {
       text-decoration: none;
       font-size: 0.85rem;
       font-weight: 600;
-      padding: 7px 16px;
+      padding: 6px 14px;
       border-radius: 999px;
       transition: all 0.2s ease;
     }
 
-    .nav-btn-text {
-      color: var(--ink-subtle);
+    .nav-btn-ghost {
+      color: var(--ink-muted);
     }
-    .nav-btn-text:hover {
+    .nav-btn-ghost:hover {
       color: var(--ink);
     }
 
-    .nav-btn-cta {
+    .nav-btn-dark {
       background: var(--ink);
       color: var(--paper);
     }
-    .nav-btn-cta:hover {
+    .nav-btn-dark:hover {
       background: #000;
       transform: translateY(-1px);
     }
 
-    /* HERO SECTION */
+    /* SCENE 1: HERO */
     .hero {
-      min-height: 94vh;
+      min-height: 92vh;
       display: flex;
       flex-direction: column;
       align-items: center;
@@ -157,120 +148,100 @@
       position: relative;
     }
 
-    .hero-eyebrow {
-      display: inline-flex;
-      align-items: center;
-      gap: 8px;
+    .hero-badge {
+      display: inline-block;
       font-family: var(--mono);
-      font-size: 0.76rem;
+      font-size: 0.75rem;
       font-weight: 600;
-      letter-spacing: 0.14em;
+      letter-spacing: 0.12em;
       text-transform: uppercase;
       color: var(--clay);
       background: var(--clay-soft);
       padding: 6px 14px;
       border-radius: 999px;
-      margin-bottom: 28px;
-      border: 1px solid rgba(217, 119, 87, 0.2);
+      margin-bottom: 24px;
     }
 
     .hero-title {
       font-family: var(--serif);
-      font-size: clamp(3.6rem, 8.5vw, 7.8rem);
-      line-height: 0.98;
-      letter-spacing: -0.025em;
-      max-width: 980px;
-      margin-bottom: 28px;
-      color: var(--ink);
+      font-size: clamp(3.2rem, 8vw, 7.2rem);
+      line-height: 1;
+      letter-spacing: -0.03em;
+      max-width: 900px;
+      margin-bottom: 24px;
     }
 
     .hero-title em {
       font-style: italic;
       color: var(--clay);
+    }
+
+    .hero-one-liner {
+      font-size: clamp(1.15rem, 2.2vw, 1.5rem);
+      color: var(--ink-muted);
+      max-width: 580px;
+      margin-bottom: 40px;
       font-weight: 400;
     }
 
-    .hero-lead {
-      font-size: clamp(1.1rem, 2.2vw, 1.4rem);
-      color: var(--ink-subtle);
-      max-width: 620px;
-      margin-bottom: 44px;
-      line-height: 1.55;
-      font-weight: 400;
-    }
-
-    .hero-cta-group {
+    .hero-actions {
       display: flex;
       align-items: center;
       gap: 14px;
       flex-wrap: wrap;
       justify-content: center;
-      margin-bottom: 36px;
+      margin-bottom: 32px;
     }
 
-    .btn-main {
+    .btn-clay {
       display: inline-flex;
       align-items: center;
-      gap: 10px;
+      gap: 8px;
       background: var(--clay);
       color: #fff;
-      padding: 15px 32px;
+      padding: 14px 30px;
       border-radius: 999px;
       text-decoration: none;
       font-weight: 700;
-      font-size: 0.96rem;
-      box-shadow: 0 8px 24px var(--clay-glow);
+      font-size: 0.95rem;
       transition: all 0.2s ease;
+      box-shadow: 0 6px 20px rgba(217, 119, 87, 0.25);
     }
-    .btn-main:hover {
+    .btn-clay:hover {
       background: var(--clay-hover);
       transform: translateY(-2px);
-      box-shadow: 0 12px 32px rgba(217, 119, 87, 0.35);
+      box-shadow: 0 10px 28px rgba(217, 119, 87, 0.35);
     }
 
-    .btn-ghost {
+    .btn-outline {
       display: inline-flex;
       align-items: center;
       gap: 8px;
       background: transparent;
       color: var(--ink);
-      border: 1px solid var(--border-strong);
-      padding: 15px 28px;
+      border: 1px solid var(--border-dark);
+      padding: 14px 26px;
       border-radius: 999px;
       text-decoration: none;
       font-weight: 600;
-      font-size: 0.96rem;
+      font-size: 0.95rem;
       transition: all 0.2s ease;
     }
-    .btn-ghost:hover {
+    .btn-outline:hover {
       border-color: var(--ink);
       transform: translateY(-2px);
     }
 
-    .platform-ticker {
-      display: flex;
-      align-items: center;
-      gap: 16px;
-      font-size: 0.84rem;
-      color: var(--ink-subtle);
-      font-weight: 500;
-    }
-    .platform-ticker span {
-      display: inline-flex;
-      align-items: center;
-      gap: 6px;
-    }
-    .platform-ticker .bullet {
-      width: 4px;
-      height: 4px;
-      border-radius: 50%;
-      background: var(--border-strong);
+    .hero-foot {
+      font-family: var(--mono);
+      font-size: 0.8rem;
+      color: var(--ink-muted);
     }
 
-    /* SCROLL TRACK & PINNED STORYTELLER */
+    /* SCENE 2: PINNED SCROLL STORY */
     .story-track {
       position: relative;
-      height: 440vh;
+      height: 420vh;
     }
 
     .story-viewport {
@@ -286,45 +257,41 @@
       justify-content: center;
       overflow: hidden;
       padding: 40px 24px;
-      transition: background 0.5s ease;
     }
 
-    /* Center Visual Stage */
     .stage-center {
       position: relative;
-      width: 220px;
-      height: 190px;
+      width: 200px;
+      height: 180px;
       display: flex;
       align-items: center;
       justify-content: center;
-      margin-bottom: 40px;
+      margin-bottom: 36px;
     }
 
     .stage-hopper {
-      width: 120px;
-      height: 120px;
+      width: 110px;
+      height: 110px;
       transition: transform 0.6s cubic-bezier(0.16, 1, 0.3, 1), opacity 0.5s ease;
     }
-
     .stage-hopper svg {
       width: 100%;
       height: 100%;
-      filter: drop-shadow(0 16px 40px rgba(217, 119, 87, 0.35));
+      filter: drop-shadow(0 16px 36px rgba(217, 119, 87, 0.35));
     }
 
-    /* Morph items */
-    .floating-drop-chip {
+    .drop-chip {
       position: absolute;
-      top: -30px;
+      top: -24px;
       left: 50%;
       transform: translateX(-50%);
       background: rgba(255, 255, 255, 0.08);
-      border: 1px solid rgba(255, 255, 255, 0.16);
-      padding: 8px 18px;
+      border: 1px solid rgba(255, 255, 255, 0.15);
+      padding: 6px 14px;
       border-radius: 999px;
       font-family: var(--mono);
-      font-size: 0.8rem;
-      color: rgba(255, 255, 255, 0.9);
+      font-size: 0.78rem;
+      color: #fff;
       display: flex;
       align-items: center;
       gap: 8px;
@@ -332,15 +299,14 @@
       transition: all 0.5s cubic-bezier(0.16, 1, 0.3, 1);
       opacity: 0;
     }
-
-    .chip-dot {
-      width: 7px;
-      height: 7px;
+    .drop-chip-dot {
+      width: 6px;
+      height: 6px;
       border-radius: 50%;
       background: var(--clay);
     }
 
-    .schedule-badge {
+    .schedule-pill {
       position: absolute;
       bottom: 0px;
       left: 50%;
@@ -348,46 +314,43 @@
       background: var(--clay);
       color: #fff;
       font-family: var(--mono);
-      font-size: 0.82rem;
+      font-size: 0.8rem;
       font-weight: 600;
       padding: 6px 16px;
       border-radius: 999px;
       opacity: 0;
       transition: all 0.5s ease;
       white-space: nowrap;
-      box-shadow: 0 8px 24px rgba(217, 119, 87, 0.4);
     }
 
-    /* Delivery Duo Visual */
-    .delivery-duo {
+    .duo-badge {
       position: absolute;
       top: 50%;
       left: 50%;
       transform: translate(-50%, -50%);
       display: flex;
       flex-direction: column;
-      gap: 12px;
-      width: 320px;
+      gap: 10px;
+      width: 290px;
       opacity: 0;
       transition: all 0.6s cubic-bezier(0.16, 1, 0.3, 1);
       pointer-events: none;
     }
 
-    .delivery-card {
+    .duo-card {
       background: rgba(255, 255, 255, 0.06);
       border: 1px solid rgba(255, 255, 255, 0.12);
-      border-radius: 12px;
-      padding: 12px 18px;
+      border-radius: 10px;
+      padding: 10px 14px;
       display: flex;
       align-items: center;
-      gap: 12px;
-      backdrop-filter: blur(12px);
+      gap: 10px;
     }
 
-    .delivery-card-icon {
-      width: 32px;
-      height: 32px;
-      border-radius: 8px;
+    .duo-card-icon {
+      width: 28px;
+      height: 28px;
+      border-radius: 6px;
       background: rgba(217, 119, 87, 0.2);
       display: flex;
       align-items: center;
@@ -396,198 +359,169 @@
       flex-shrink: 0;
     }
 
-    .delivery-card-content {
-      text-align: left;
-    }
-    .delivery-card-title {
+    .duo-card-title {
       font-size: 0.82rem;
       font-weight: 700;
       color: #fff;
     }
-    .delivery-card-sub {
+    .duo-card-sub {
       font-size: 0.72rem;
-      color: rgba(255, 255, 255, 0.6);
-      margin-top: 1px;
+      color: rgba(255, 255, 255, 0.55);
     }
 
-    /* Text Chapters */
-    .story-text-stage {
+    .story-text {
       position: relative;
       width: 100%;
-      max-width: 800px;
+      max-width: 760px;
       text-align: center;
-      min-height: 180px;
+      min-height: 140px;
     }
 
-    .story-step {
+    .step-item {
       position: absolute;
       top: 0;
       left: 0;
       width: 100%;
       opacity: 0;
-      transform: translateY(32px);
-      transition: opacity 0.55s cubic-bezier(0.16, 1, 0.3, 1), transform 0.55s cubic-bezier(0.16, 1, 0.3, 1);
+      transform: translateY(24px);
+      transition: opacity 0.5s cubic-bezier(0.16, 1, 0.3, 1), transform 0.5s cubic-bezier(0.16, 1, 0.3, 1);
       pointer-events: none;
     }
 
-    .story-step.active {
+    .step-item.active {
       opacity: 1;
       transform: translateY(0);
       pointer-events: auto;
     }
 
-    .step-tag {
+    .step-idx {
       font-family: var(--mono);
       font-size: 0.74rem;
       font-weight: 600;
-      letter-spacing: 0.14em;
+      letter-spacing: 0.12em;
       color: var(--clay);
       text-transform: uppercase;
-      margin-bottom: 12px;
+      margin-bottom: 10px;
     }
 
-    .step-title {
+    .step-head {
       font-family: var(--serif);
-      font-size: clamp(3rem, 6.5vw, 5.8rem);
-      line-height: 1.02;
-      letter-spacing: -0.025em;
-      margin-bottom: 16px;
+      font-size: clamp(2.8rem, 6vw, 5.2rem);
+      line-height: 1;
+      letter-spacing: -0.03em;
+      margin-bottom: 12px;
       color: var(--paper);
     }
-    .step-title em {
+    .step-head em {
       font-style: italic;
       color: var(--clay);
     }
 
-    .step-desc {
-      font-size: clamp(1rem, 2vw, 1.3rem);
+    .step-one-liner {
+      font-size: clamp(1rem, 2vw, 1.25rem);
       color: rgba(250, 248, 245, 0.65);
-      max-width: 580px;
-      margin: 0 auto;
-      line-height: 1.55;
     }
 
-    /* Dots */
     .story-dots {
       position: absolute;
       bottom: 36px;
       display: flex;
-      gap: 10px;
+      gap: 8px;
     }
 
-    .story-dot {
-      width: 24px;
+    .dot {
+      width: 20px;
       height: 3px;
       background: rgba(255, 255, 255, 0.2);
       border-radius: 999px;
       transition: all 0.3s ease;
     }
 
-    .story-dot.active {
+    .dot.active {
       background: var(--clay);
-      width: 44px;
+      width: 38px;
     }
 
-    /* THE DUAL ARCHITECTURE PILLARS */
-    .pillars-section {
-      padding: 140px 24px;
-      max-width: 1080px;
+    /* SCENE 3: FOUR ONE-LINERS (PILLARS) */
+    .four-section {
+      padding: 120px 24px;
+      max-width: 960px;
       margin: 0 auto;
     }
 
-    .section-eyebrow {
+    .four-tag {
       font-family: var(--mono);
       font-size: 0.75rem;
       text-transform: uppercase;
-      letter-spacing: 0.14em;
+      letter-spacing: 0.12em;
       color: var(--clay);
       font-weight: 600;
-      margin-bottom: 12px;
+      margin-bottom: 10px;
     }
 
-    .section-title {
+    .four-title {
       font-family: var(--serif);
-      font-size: clamp(2.8rem, 5.5vw, 4.8rem);
+      font-size: clamp(2.6rem, 5vw, 4.4rem);
       letter-spacing: -0.025em;
       line-height: 1.05;
-      margin-bottom: 20px;
-      color: var(--ink);
+      margin-bottom: 48px;
     }
 
-    .section-lead {
-      font-size: 1.2rem;
-      color: var(--ink-subtle);
-      max-width: 620px;
-      margin-bottom: 60px;
-      line-height: 1.6;
+    .four-list {
+      border-top: 1px solid var(--border-dark);
     }
 
-    .pillar-row {
-      display: grid;
-      grid-template-columns: 1fr;
-      gap: 32px;
+    .four-row {
+      padding: 28px 0;
+      border-bottom: 1px solid var(--border-dark);
+      display: flex;
+      flex-direction: column;
+      gap: 6px;
     }
 
-    @media (min-width: 768px) {
-      .pillar-row {
-        grid-template-columns: 1fr 1fr;
+    @media (min-width: 640px) {
+      .four-row {
+        flex-direction: row;
+        justify-content: space-between;
+        align-items: baseline;
       }
     }
 
-    .pillar-item {
-      padding: 40px 32px;
-      border-top: 1px solid var(--border-strong);
-      display: flex;
-      flex-direction: column;
-      justify-content: space-between;
-      min-height: 280px;
-    }
-
-    .pillar-num {
-      font-family: var(--mono);
-      font-size: 0.8rem;
-      color: var(--clay);
-      font-weight: 600;
-      margin-bottom: 24px;
-    }
-
-    .pillar-heading {
-      font-size: 1.75rem;
-      font-weight: 800;
-      letter-spacing: -0.025em;
-      line-height: 1.2;
-      margin-bottom: 12px;
+    .four-head {
+      font-size: 1.35rem;
+      font-weight: 700;
+      letter-spacing: -0.02em;
       color: var(--ink);
     }
 
-    .pillar-text {
-      font-size: 1.05rem;
-      color: var(--ink-subtle);
-      line-height: 1.55;
+    .four-sub {
+      font-size: 1rem;
+      color: var(--ink-muted);
     }
 
-    /* THE HARDWARE SPEC LEDGER (Scroll reveal) */
-    .ledger-section {
+    /* SCENE 4: NUMBERS LEDGER */
+    .ledger {
       background: var(--sand);
-      padding: 120px 24px;
+      padding: 100px 24px;
     }
 
     .ledger-inner {
-      max-width: 1040px;
+      max-width: 960px;
       margin: 0 auto;
     }
 
     .ledger-row {
+      padding: 28px 0;
+      border-bottom: 1px solid var(--border-dark);
       display: flex;
       flex-direction: column;
-      padding: 38px 0;
-      border-bottom: 1px solid var(--border-strong);
+      gap: 8px;
       opacity: 0.15;
-      transform: translateY(16px);
-      transition: opacity 0.6s ease, transform 0.6s ease;
+      transform: translateY(14px);
+      transition: opacity 0.5s ease, transform 0.5s ease;
     }
 
-    .ledger-row.revealed {
+    .ledger-row.lit {
       opacity: 1;
       transform: translateY(0);
     }
@@ -595,113 +529,100 @@
     @media (min-width: 640px) {
       .ledger-row {
         flex-direction: row;
-        align-items: baseline;
         justify-content: space-between;
+        align-items: baseline;
       }
     }
 
-    .ledger-value {
+    .ledger-stat {
       font-family: var(--serif);
-      font-size: clamp(3.2rem, 6.5vw, 5.6rem);
+      font-size: clamp(3rem, 6vw, 5rem);
       letter-spacing: -0.03em;
       line-height: 1;
       color: var(--ink);
     }
-
-    .ledger-value span {
+    .ledger-stat span {
       color: var(--clay);
       font-size: 0.55em;
-      vertical-align: baseline;
     }
 
-    .ledger-info {
-      text-align: left;
-      margin-top: 10px;
-    }
-
-    @media (min-width: 640px) {
-      .ledger-info {
-        text-align: right;
-        margin-top: 0;
-      }
-    }
-
-    .ledger-title {
-      font-size: 1.2rem;
+    .ledger-label {
+      font-size: 1.15rem;
       font-weight: 700;
       color: var(--ink);
     }
 
-    .ledger-desc {
-      font-size: 0.92rem;
-      color: var(--ink-subtle);
-      margin-top: 4px;
+    .ledger-detail {
+      font-size: 0.9rem;
+      color: var(--ink-muted);
+      margin-top: 2px;
     }
 
-    /* INSTALLATION SECTION */
-    .install-section {
-      min-height: 85vh;
+    @media (min-width: 640px) {
+      .ledger-meta {
+        text-align: right;
+      }
+    }
+
+    /* SCENE 5: ONE COMMAND INSTALL */
+    .install {
+      min-height: 80vh;
       display: flex;
       flex-direction: column;
       align-items: center;
       justify-content: center;
       text-align: center;
-      padding: 120px 24px;
-      position: relative;
+      padding: 100px 24px;
     }
 
-    .install-title {
+    .install-head {
       font-family: var(--serif);
-      font-size: clamp(3.2rem, 7vw, 6.4rem);
+      font-size: clamp(3rem, 6.5vw, 5.8rem);
       letter-spacing: -0.025em;
-      line-height: 1.02;
-      margin-bottom: 18px;
+      line-height: 1;
+      margin-bottom: 14px;
     }
-
-    .install-title em {
+    .install-head em {
       font-style: italic;
       color: var(--clay);
     }
 
-    .install-lead {
-      font-size: 1.25rem;
-      color: var(--ink-subtle);
-      max-width: 520px;
-      margin-bottom: 48px;
+    .install-sub {
+      font-size: 1.15rem;
+      color: var(--ink-muted);
+      margin-bottom: 36px;
     }
 
-    .command-box {
+    .cmd-box {
       display: inline-flex;
       align-items: center;
       gap: 16px;
       background: var(--ink);
-      border: 1px solid var(--ink);
       padding: 14px 22px;
       border-radius: 999px;
       font-family: var(--mono);
       font-size: clamp(0.85rem, 1.8vw, 0.96rem);
-      box-shadow: 0 12px 40px rgba(0, 0, 0, 0.12);
       cursor: pointer;
       user-select: none;
-      transition: all 0.25s ease;
-      margin-bottom: 36px;
+      transition: all 0.2s ease;
+      margin-bottom: 32px;
       max-width: 100%;
       overflow-x: auto;
       color: #CBD5E1;
     }
 
-    .command-box:hover {
+    .cmd-box:hover {
       transform: translateY(-2px);
-      box-shadow: 0 16px 48px rgba(0, 0, 0, 0.18);
+      box-shadow: 0 12px 36px rgba(0, 0, 0, 0.15);
     }
 
-    .command-box .dollar {
+    .cmd-box .prompt {
       color: var(--clay);
       font-weight: 700;
     }
 
     .copy-pill {
-      background: rgba(255, 255, 255, 0.1);
+      background: rgba(255, 255, 255, 0.12);
       color: #fff;
       border: none;
       padding: 6px 14px;
@@ -710,51 +631,43 @@
       font-weight: 700;
       font-family: var(--sans);
       cursor: pointer;
-      display: flex;
-      align-items: center;
-      gap: 6px;
-      white-space: nowrap;
       transition: all 0.2s ease;
+      white-space: nowrap;
     }
-
     .copy-pill:hover {
       background: var(--clay);
     }
 
-    .install-actions {
+    .install-btns {
       display: flex;
-      gap: 14px;
+      gap: 12px;
       flex-wrap: wrap;
       justify-content: center;
     }
 
-    .action-btn {
-      display: inline-flex;
-      align-items: center;
-      gap: 8px;
-      padding: 13px 26px;
-      border-radius: 999px;
+    .inst-btn {
+      text-decoration: none;
       font-size: 0.92rem;
       font-weight: 600;
-      text-decoration: none;
+      padding: 12px 24px;
+      border-radius: 999px;
       transition: all 0.2s ease;
     }
 
-    .action-btn-filled {
+    .inst-btn-clay {
       background: var(--clay);
       color: #fff;
     }
-    .action-btn-filled:hover {
+    .inst-btn-clay:hover {
       background: var(--clay-hover);
       transform: translateY(-2px);
     }
 
-    .action-btn-outline {
-      background: transparent;
+    .inst-btn-ghost {
+      border: 1px solid var(--border-dark);
       color: var(--ink);
-      border: 1px solid var(--border-strong);
     }
-    .action-btn-outline:hover {
+    .inst-btn-ghost:hover {
       border-color: var(--ink);
       transform: translateY(-2px);
     }
@@ -762,14 +675,14 @@
     /* FOOTER */
     footer {
       border-top: 1px solid var(--border);
-      padding: 44px 24px;
+      padding: 36px 24px;
       display: flex;
       flex-direction: column;
       align-items: center;
       justify-content: center;
-      gap: 10px;
-      font-size: 0.85rem;
-      color: var(--ink-subtle);
+      gap: 8px;
+      font-size: 0.84rem;
+      color: var(--ink-muted);
       text-align: center;
     }
 
@@ -778,7 +691,6 @@
       text-decoration: none;
       font-weight: 600;
     }
-
     footer a:hover {
       color: var(--clay);
     }
@@ -786,65 +698,48 @@
 </head>
 <body>
 
-  <!-- Floating Navigation Header -->
+  <!-- NAV -->
   <nav>
-    <a href="#" class="brand">
-      <img src="logo.svg" alt="ForwardBin Icon" class="brand-icon">
+    <a href="#" class="nav-brand">
+      <img src="logo.svg" alt="ForwardBin Icon">
       <span>ForwardBin</span>
     </a>
-    <div class="nav-os-badge">
-      <span>macOS</span>
-      <span>•</span>
-      <span>Linux</span>
-    </div>
+    <div class="nav-platforms">macOS + Linux</div>
     <div class="nav-actions">
-      <a href="https://github.com/s-chudmunge/forwardbin" target="_blank" rel="noopener" class="nav-btn nav-btn-text">GitHub</a>
-      <a href="#install" class="nav-btn nav-btn-cta">Install</a>
+      <a href="https://github.com/s-chudmunge/forwardbin" target="_blank" rel="noopener" class="nav-btn nav-btn-ghost">GitHub</a>
+      <a href="#install" class="nav-btn nav-btn-dark">Install</a>
     </div>
   </nav>
 
-  <!-- HERO SCENE -->
+  <!-- HERO -->
   <section class="hero">
-    <div class="hero-eyebrow">Ambient Desktop Jarvis</div>
-    
+    <div class="hero-badge">Ambient Desktop Jarvis</div>
+
     <h1 class="hero-title">
       Your screen is full of tabs.<br>
       Your future self is <em>ready.</em>
     </h1>
 
-    <p class="hero-lead">
-      Drop any link, thought, or snippet directly into the floating bin. ForwardBin schedules it into your day and delivers it back when you actually have time.
+    <p class="hero-one-liner">
+      Drop anything now. Get it back when you actually have time.
     </p>
 
-    <div class="hero-cta-group">
-      <a href="#install" class="btn-main">
-        <span>Get ForwardBin</span>
-        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5">
-          <line x1="5" y1="12" x2="19" y2="12"></line>
-          <polyline points="12 5 19 12 12 19"></polyline>
-        </svg>
-      </a>
-      <a href="https://github.com/s-chudmunge/forwardbin" target="_blank" rel="noopener" class="btn-ghost">
-        View on GitHub
-      </a>
+    <div class="hero-actions">
+      <a href="#install" class="btn-clay">Get ForwardBin</a>
+      <a href="https://github.com/s-chudmunge/forwardbin" target="_blank" rel="noopener" class="btn-outline">View on GitHub</a>
     </div>
 
-    <div class="platform-ticker">
-      <span>macOS Apple Silicon and Intel</span>
-      <span class="bullet"></span>
-      <span>Linux Ubuntu, Fedora, Arch, Mint</span>
-    </div>
+    <div class="hero-foot">macOS Apple Silicon and Intel • Linux Ubuntu, Fedora, Arch, Mint</div>
   </section>
 
-  <!-- SCROLL-PINNED STORYTELLER (No cards, pure morphing viewport) -->
+  <!-- PINNED SCROLL STORY -->
   <div class="story-track" id="storyTrack">
-    <div class="story-viewport" id="storyViewport">
+    <div class="story-viewport">
 
-      <!-- Visual Center Stage -->
       <div class="stage-center">
-        <div class="floating-drop-chip" id="dropChip">
-          <div class="chip-dot"></div>
-          <span>Any link, snippet, or idea</span>
+        <div class="drop-chip" id="dropChip">
+          <div class="drop-chip-dot"></div>
+          <span>Any link, thought, or snippet</span>
         </div>
 
         <div class="stage-hopper" id="stageHopper">
@@ -857,211 +752,170 @@
           </svg>
         </div>
 
-        <div class="schedule-badge" id="scheduleBadge">
+        <div class="schedule-pill" id="schedulePill">
           Tomorrow 9:00 AM
         </div>
 
-        <div class="delivery-duo" id="deliveryDuo">
-          <div class="delivery-card">
-            <div class="delivery-card-icon">
-              <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+        <div class="duo-badge" id="duoBadge">
+          <div class="duo-card">
+            <div class="duo-card-icon">
+              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
                 <path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9"></path>
                 <path d="M13.73 21a2 2 0 0 1-3.46 0"></path>
               </svg>
             </div>
-            <div class="delivery-card-content">
-              <div class="delivery-card-title">Desktop Alert</div>
-              <div class="delivery-card-sub">Native chime on macOS and Linux</div>
+            <div>
+              <div class="duo-card-title">Desktop Chime</div>
+              <div class="duo-card-sub">Native alert on macOS and Linux</div>
             </div>
           </div>
 
-          <div class="delivery-card">
-            <div class="delivery-card-icon">
-              <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+          <div class="duo-card">
+            <div class="duo-card-icon">
+              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
                 <rect x="2" y="4" width="20" height="16" rx="2"></rect>
                 <path d="m22 7-8.97 5.7a1.94 1.94 0 0 1-2.06 0L2 7"></path>
               </svg>
             </div>
-            <div class="delivery-card-content">
-              <div class="delivery-card-title">Email Briefing</div>
-              <div class="delivery-card-sub">Curated slot dispatch in your inbox</div>
+            <div>
+              <div class="duo-card-title">Email Briefing</div>
+              <div class="duo-card-sub">Executive digest in your inbox</div>
             </div>
           </div>
         </div>
       </div>
 
-      <!-- Text Stages -->
-      <div class="story-text-stage">
-        <!-- 01 -->
-        <div class="story-step active" id="step1">
-          <div class="step-tag">01 / Frictionless Capture</div>
-          <h2 class="step-title">Drop <em>anything.</em></h2>
-          <p class="step-desc">A browser tab you cannot read right now. A code repo. A meeting note. One flick of the cursor and it is captured.</p>
+      <div class="story-text">
+        <div class="step-item active" id="step1">
+          <div class="step-idx">01 / Capture</div>
+          <h2 class="step-head">Drop <em>anything.</em></h2>
+          <p class="step-one-liner">Links, thoughts, code, files. One fluid flick of the mouse.</p>
         </div>
 
-        <!-- 02 -->
-        <div class="story-step" id="step2">
-          <div class="step-tag">02 / Ambient Intelligence</div>
-          <h2 class="step-title">Jarvis schedules it.</h2>
-          <p class="step-desc">Pick in two hours, tomorrow morning, or next Monday. Local natural language processing understands your timing automatically.</p>
+        <div class="step-item" id="step2">
+          <div class="step-idx">02 / Schedule</div>
+          <h2 class="step-head">Tell Jarvis when.</h2>
+          <p class="step-one-liner">In two hours. Tomorrow morning. Next week. Or auto-detected.</p>
         </div>
 
-        <!-- 03 -->
-        <div class="story-step" id="step3">
-          <div class="step-tag">03 / Immediate Peace</div>
-          <h2 class="step-title">It <em>vanishes.</em></h2>
-          <p class="step-desc">Zero mental clutter. Close the browser tab with complete confidence. It is safely queued until your chosen moment.</p>
+        <div class="step-item" id="step3">
+          <div class="step-idx">03 / Silence</div>
+          <h2 class="step-head">It <em>vanishes.</em></h2>
+          <p class="step-one-liner">Zero open tabs. Zero cognitive load. Pure focus.</p>
         </div>
 
-        <!-- 04 -->
-        <div class="story-step" id="step4">
-          <div class="step-tag">04 / Dual Delivery</div>
-          <h2 class="step-title">Delivered on time.</h2>
-          <p class="step-desc">A native desktop alert rings at your machine. Or an executive briefing arrives directly in your email inbox so you never miss a beat.</p>
+        <div class="step-item" id="step4">
+          <div class="step-idx">04 / Return</div>
+          <h2 class="step-head">Delivered back.</h2>
+          <p class="step-one-liner">Desktop chime at your workstation. Email briefing on your phone.</p>
         </div>
       </div>
 
-      <!-- Progress Indicators -->
       <div class="story-dots">
-        <div class="story-dot active" id="dot1"></div>
-        <div class="story-dot" id="dot2"></div>
-        <div class="story-dot" id="dot3"></div>
-        <div class="story-dot" id="dot4"></div>
+        <div class="dot active" id="dot1"></div>
+        <div class="dot" id="dot2"></div>
+        <div class="dot" id="dot3"></div>
+        <div class="dot" id="dot4"></div>
       </div>
 
     </div>
   </div>
 
-  <!-- THE PILLARS (Clean, non-card presentation) -->
-  <section class="pillars-section">
-    <div class="section-eyebrow">// Engineered for Focus</div>
-    <h2 class="section-title">An executive assistant built into your operating system.</h2>
-    <p class="section-lead">
-      No bloated Electron apps. No cloud lock-in. Just pure native speed designed to protect your attention span.
-    </p>
+  <!-- FOUR ONE-LINERS -->
+  <section class="four-section">
+    <div class="four-tag">// Pure Native Architecture</div>
+    <h2 class="four-title">Designed for focus, not subscriptions.</h2>
 
-    <div class="pillar-row">
-      <div class="pillar-item">
-        <div class="pillar-num">01</div>
-        <div>
-          <h3 class="pillar-heading">Curated Email Briefings</h3>
-          <p class="pillar-text">
-            ForwardBin syncs with Resend or your custom SMTP. When a slot is up, receive a beautifully structured email digest on your phone or laptop.
-          </p>
-        </div>
+    <div class="four-list">
+      <div class="four-row">
+        <div class="four-head">Executive Email Briefings</div>
+        <div class="four-sub">Curated slot dispatches sent directly to your inbox.</div>
       </div>
 
-      <div class="pillar-item">
-        <div class="pillar-num">02</div>
-        <div>
-          <h3 class="pillar-heading">Native macOS and Linux</h3>
-          <p class="pillar-text">
-            Integrated into your OS lifecycle. Managed cleanly via LaunchAgents on macOS, and user systemd services on Linux.
-          </p>
-        </div>
+      <div class="four-row">
+        <div class="four-head">macOS and Linux Native</div>
+        <div class="four-sub">Built in compiled Rust. Zero Electron overhead.</div>
       </div>
 
-      <div class="pillar-item">
-        <div class="pillar-num">03</div>
-        <div>
-          <h3 class="pillar-heading">Local Intelligence Engine</h3>
-          <p class="pillar-text">
-            Natural language calendar time extraction and optional AI summarization. Understands your schedule so items resurface when you are free.
-          </p>
-        </div>
+      <div class="four-row">
+        <div class="four-head">Smart Timing Detection</div>
+        <div class="four-sub">Natural language scheduling with automatic calendar slots.</div>
       </div>
 
-      <div class="pillar-item">
-        <div class="pillar-num">04</div>
-        <div>
-          <h3 class="pillar-heading">100% Private and Local</h3>
-          <p class="pillar-text">
-            Zero accounts. Zero telemetry. Your SQLite ledger resides exclusively on your device. What you drop never leaves your machine.
-          </p>
-        </div>
+      <div class="four-row">
+        <div class="four-head">100% Private and Local</div>
+        <div class="four-sub">No accounts. Stays on your machine forever.</div>
       </div>
     </div>
   </section>
 
-  <!-- HARDWARE SPEC LEDGER -->
-  <section class="ledger-section">
+  <!-- NUMBERS LEDGER -->
+  <section class="ledger">
     <div class="ledger-inner">
-      <div class="section-eyebrow">// Hardware Ledger</div>
+      <div class="four-tag" style="margin-bottom: 24px;">// Hardware Specs</div>
 
-      <div class="ledger-row" data-ledger-row>
-        <div class="ledger-value">7.8<span>MB</span></div>
-        <div class="ledger-info">
-          <div class="ledger-title">RAM Footprint</div>
-          <div class="ledger-desc">Pure compiled native Rust. Zero browser runtime overhead.</div>
+      <div class="ledger-row" data-ledger>
+        <div class="ledger-stat">7.8<span>MB</span></div>
+        <div class="ledger-meta">
+          <div class="ledger-label">Total RAM footprint</div>
+          <div class="ledger-detail">Compiled native binary. Sits quietly in memory.</div>
         </div>
       </div>
 
-      <div class="ledger-row" data-ledger-row>
-        <div class="ledger-value">4<span>ms</span></div>
-        <div class="ledger-info">
-          <div class="ledger-title">Drop Latency</div>
-          <div class="ledger-desc">Instant append to local SQLite WAL with event-driven IPC.</div>
+      <div class="ledger-row" data-ledger>
+        <div class="ledger-stat">4<span>ms</span></div>
+        <div class="ledger-meta">
+          <div class="ledger-label">Ingestion speed</div>
+          <div class="ledger-detail">Direct local SQLite write. No network round-trips.</div>
         </div>
       </div>
 
-      <div class="ledger-row" data-ledger-row>
-        <div class="ledger-value">0.0<span>%</span></div>
-        <div class="ledger-info">
-          <div class="ledger-title">Idle CPU Utilization</div>
-          <div class="ledger-desc">Pure socket listener. Sleeps quietly until cursor interaction.</div>
+      <div class="ledger-row" data-ledger>
+        <div class="ledger-stat">0.0<span>%</span></div>
+        <div class="ledger-meta">
+          <div class="ledger-label">Idle CPU</div>
+          <div class="ledger-detail">Event-driven Unix sockets. Zero battery drain.</div>
         </div>
       </div>
 
-      <div class="ledger-row" data-ledger-row>
-        <div class="ledger-value">Dual<span>Channel</span></div>
-        <div class="ledger-info">
-          <div class="ledger-title">Desktop and Inbox</div>
-          <div class="ledger-desc">Native notification banners plus executive email dispatches.</div>
+      <div class="ledger-row" data-ledger>
+        <div class="ledger-stat">Dual<span>Channel</span></div>
+        <div class="ledger-meta">
+          <div class="ledger-label">Desktop and inbox delivery</div>
+          <div class="ledger-detail">Local notification alerts plus email summaries.</div>
         </div>
       </div>
     </div>
   </section>
 
-  <!-- INSTALLATION SECTION -->
-  <section class="install-section" id="install">
-    <h2 class="install-title">
-      One command.<br>
-      <em>Zero friction.</em>
+  <!-- INSTALL -->
+  <section class="install" id="install">
+    <h2 class="install-head">
+      Ready in three seconds.<br>
+      <em>Zero configuration.</em>
     </h2>
-    <p class="install-lead">
-      Universal installer for macOS and Linux. Configures background daemons and launcher automatically.
-    </p>
+    <p class="install-sub">One universal command for macOS and Linux.</p>
 
-    <div class="command-box" id="cmdBox">
-      <span class="dollar">$</span>
-      <span id="cmdText">curl -sSL https://raw.githubusercontent.com/s-chudmunge/forwardbin/main/install.sh | bash</span>
-      <button class="copy-pill" id="copyBtn">
-        <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5">
-          <rect x="9" y="9" width="13" height="13" rx="2" ry="2"></rect>
-          <path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"></path>
-        </svg>
-        <span>Copy</span>
-      </button>
+    <div class="cmd-box" id="cmdBox">
+      <span class="prompt">$</span>
+      <span>curl -sSL https://raw.githubusercontent.com/s-chudmunge/forwardbin/main/install.sh | bash</span>
+      <button class="copy-pill" id="copyBtn">Copy</button>
     </div>
 
-    <div class="install-actions">
-      <a href="https://github.com/s-chudmunge/forwardbin/releases/download/v1.0.0/forwardbin-installer.run" class="action-btn action-btn-filled">
-        Download Linux .run Installer
-      </a>
-      <a href="https://github.com/s-chudmunge/forwardbin" target="_blank" rel="noopener" class="action-btn action-btn-outline">
-        View on GitHub (v1.0.0)
-      </a>
+    <div class="install-btns">
+      <a href="https://github.com/s-chudmunge/forwardbin/releases/download/v1.0.0/forwardbin-installer.run" class="inst-btn inst-btn-clay">Download Linux .run</a>
+      <a href="https://github.com/s-chudmunge/forwardbin" target="_blank" rel="noopener" class="inst-btn inst-btn-ghost">View on GitHub</a>
     </div>
   </section>
 
   <!-- FOOTER -->
   <footer>
-    <div>ForwardBin is open source software released under the MIT License.</div>
-    <div>Designed for macOS and Linux by <a href="https://github.com/s-chudmunge" target="_blank" rel="noopener">Sankalp Chudmunge</a></div>
+    <div>ForwardBin is free and open-source under the MIT License.</div>
+    <div>Crafted by <a href="https://github.com/s-chudmunge" target="_blank" rel="noopener">Sankalp Chudmunge</a></div>
   </footer>
 
   <script>
-    // 1. PINNED STORYTELLER CONTROLLER
+    // PINNED STORYTELLER
     const track = document.getElementById('storyTrack');
     const steps = [
       document.getElementById('step1'),
@@ -1078,71 +932,52 @@
 
     const dropChip = document.getElementById('dropChip');
     const stageHopper = document.getElementById('stageHopper');
-    const scheduleBadge = document.getElementById('scheduleBadge');
-    const deliveryDuo = document.getElementById('deliveryDuo');
+    const schedulePill = document.getElementById('schedulePill');
+    const duoBadge = document.getElementById('duoBadge');
 
     function updateStory() {
       const rect = track.getBoundingClientRect();
-      const scrollableHeight = track.offsetHeight - window.innerHeight;
-      let progress = -rect.top / scrollableHeight;
+      const scrollDist = track.offsetHeight - window.innerHeight;
+      let progress = -rect.top / scrollDist;
       progress = Math.max(0, Math.min(1, progress));
 
-      let activeIndex = 0;
-      if (progress < 0.25) {
-        activeIndex = 0;
-      } else if (progress < 0.50) {
-        activeIndex = 1;
-      } else if (progress < 0.75) {
-        activeIndex = 2;
-      } else {
-        activeIndex = 3;
-      }
+      let active = 0;
+      if (progress < 0.25) active = 0;
+      else if (progress < 0.50) active = 1;
+      else if (progress < 0.75) active = 2;
+      else active = 3;
 
-      steps.forEach((step, idx) => {
-        step.classList.toggle('active', idx === activeIndex);
-      });
+      steps.forEach((s, i) => s.classList.toggle('active', i === active));
+      dots.forEach((d, i) => d.classList.toggle('active', i === active));
 
-      dots.forEach((dot, idx) => {
-        dot.classList.toggle('active', idx === activeIndex);
-      });
-
-      // Stage Morph Transitions
-      if (activeIndex === 0) {
-        // Drop
+      if (active === 0) {
         dropChip.style.opacity = '1';
-        dropChip.style.transform = 'translateX(-50%) translateY(22px)';
+        dropChip.style.transform = 'translateX(-50%) translateY(20px)';
         stageHopper.style.transform = 'scale(1)';
         stageHopper.style.opacity = '1';
-        scheduleBadge.style.opacity = '0';
-        scheduleBadge.style.transform = 'translateX(-50%) scale(0.85)';
-        deliveryDuo.style.opacity = '0';
-        deliveryDuo.style.transform = 'translate(-50%, -50%) scale(0.92)';
-      } else if (activeIndex === 1) {
-        // Schedule
+        schedulePill.style.opacity = '0';
+        schedulePill.style.transform = 'translateX(-50%) scale(0.85)';
+        duoBadge.style.opacity = '0';
+      } else if (active === 1) {
         dropChip.style.opacity = '0';
-        dropChip.style.transform = 'translateX(-50%) translateY(60px)';
+        dropChip.style.transform = 'translateX(-50%) translateY(55px)';
         stageHopper.style.transform = 'scale(1.08)';
         stageHopper.style.opacity = '1';
-        scheduleBadge.style.opacity = '1';
-        scheduleBadge.style.transform = 'translateX(-50%) scale(1)';
-        deliveryDuo.style.opacity = '0';
-        deliveryDuo.style.transform = 'translate(-50%, -50%) scale(0.92)';
-      } else if (activeIndex === 2) {
-        // Silence
+        schedulePill.style.opacity = '1';
+        schedulePill.style.transform = 'translateX(-50%) scale(1)';
+        duoBadge.style.opacity = '0';
+      } else if (active === 2) {
         dropChip.style.opacity = '0';
-        scheduleBadge.style.opacity = '0';
+        schedulePill.style.opacity = '0';
         stageHopper.style.transform = 'scale(0.35)';
         stageHopper.style.opacity = '0.15';
-        deliveryDuo.style.opacity = '0';
-        deliveryDuo.style.transform = 'translate(-50%, -50%) scale(0.92)';
+        duoBadge.style.opacity = '0';
       } else {
-        // Delivery
         dropChip.style.opacity = '0';
-        scheduleBadge.style.opacity = '0';
+        schedulePill.style.opacity = '0';
         stageHopper.style.transform = 'scale(0.7)';
         stageHopper.style.opacity = '0.35';
-        deliveryDuo.style.opacity = '1';
-        deliveryDuo.style.transform = 'translate(-50%, -50%) scale(1)';
+        duoBadge.style.opacity = '1';
       }
     }
 
@@ -1150,42 +985,31 @@
     window.addEventListener('resize', updateStory, { passive: true });
     updateStory();
 
-    // 2. HARDWARE SPEC REVEAL
-    const ledgerRows = document.querySelectorAll('[data-ledger-row]');
-    const ledgerObserver = new IntersectionObserver((entries) => {
-      entries.forEach(entry => {
-        if (entry.isIntersecting) {
-          entry.target.classList.add('revealed');
-        } else {
-          entry.target.classList.remove('revealed');
-        }
+    // LEDGER OBSERVER
+    const rows = document.querySelectorAll('[data-ledger]');
+    const obs = new IntersectionObserver((entries) => {
+      entries.forEach(e => {
+        if (e.isIntersecting) e.target.classList.add('lit');
+        else e.target.classList.remove('lit');
       });
     }, { threshold: 0.3 });
-    ledgerRows.forEach(row => ledgerObserver.observe(row));
+    rows.forEach(r => obs.observe(r));
 
-    // 3. COPY BUTTON
+    // COPY
     const copyBtn = document.getElementById('copyBtn');
     const cmdBox = document.getElementById('cmdBox');
-    const commandText = 'curl -sSL https://raw.githubusercontent.com/s-chudmunge/forwardbin/main/install.sh | bash';
+    const cmdStr = 'curl -sSL https://raw.githubusercontent.com/s-chudmunge/forwardbin/main/install.sh | bash';
 
-    function copyToClipboard(e) {
+    function copyCmd(e) {
       if (e) e.stopPropagation();
-      navigator.clipboard.writeText(commandText).then(() => {
-        const originalHTML = copyBtn.innerHTML;
-        copyBtn.innerHTML = `
-          <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5">
-            <polyline points="20 6 9 17 4 12"></polyline>
-          </svg>
-          <span>Copied!</span>
-        `;
-        setTimeout(() => {
-          copyBtn.innerHTML = originalHTML;
-        }, 2000);
+      navigator.clipboard.writeText(cmdStr).then(() => {
+        copyBtn.textContent = 'Copied!';
+        setTimeout(() => copyBtn.textContent = 'Copy', 2000);
       });
     }
 
-    copyBtn.addEventListener('click', copyToClipboard);
-    cmdBox.addEventListener('click', copyToClipboard);
+    copyBtn.addEventListener('click', copyCmd);
+    cmdBox.addEventListener('click', copyCmd);
   </script>
 </body>
 </html>
