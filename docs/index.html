@@ -3,988 +3,983 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>ForwardBin — The Desktop Drop Bin That Schedules Your Reading</title>
-  <meta name="description" content="A lightweight native desktop drop bin in Rust that turns saved YouTube lectures, arXiv papers, and webinars into real calendar focus slots.">
+  <title>ForwardBin — Drop it. Forget it. We’ll remind you.</title>
+  <meta name="description" content="A floating drop bin for Linux. Drag any link, text, or file and schedule it to return when you actually have time. Built in pure Rust & GTK.">
+  <meta property="og:title" content="ForwardBin — Forward to your future self">
+  <meta property="og:description" content="A floating drop bin for Linux. Drop it now, receive it later. 7.8 MB RAM, zero Electron, 100% private.">
+  <meta property="og:type" content="website">
+  <meta property="og:image" content="https://s-chudmunge.github.io/forwardbin/bin_terracotta_preview.png">
   <link rel="icon" type="image/svg+xml" href="logo.svg">
-
+  
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-  <link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@400;500;600;700&family=Space+Mono:ital,wght@0,400;0,700;1,400&family=Inter:wght@400;500;600&display=swap" rel="stylesheet">
+  <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&family=JetBrains+Mono:wght@400;500;600&display=swap" rel="stylesheet">
 
   <style>
-    /* -------------------------------------------------------------
-       Drastic Minimalist Light / Editorial Industrial Aesthetic
-       Inspired by Dieter Rams, Teenage Engineering & Swiss Typography
-       ------------------------------------------------------------- */
-    :root {
-      --paper: #F7F6F2;
-      --paper-card: #FFFFFF;
-      --paper-sunken: #EFECE5;
-      --rule: #DDD9CF;
-      --rule-dark: #C2BDAF;
-      --ink: #141311;
-      --ink-muted: #615E57;
-      --ink-faint: #918D83;
-      --terracotta: #D97757;
-      --terracotta-tint: rgba(217, 119, 87, 0.12);
-      --green: #1B8A5A;
-      --font-display: 'Space Grotesk', -apple-system, sans-serif;
-      --font-body: 'Inter', -apple-system, sans-serif;
-      --font-mono: 'Space Mono', monospace;
-    }
-
-    * {
+    *, *::before, *::after {
       box-sizing: border-box;
       margin: 0;
       padding: 0;
     }
 
-    body {
-      background-color: var(--paper);
-      color: var(--ink);
-      font-family: var(--font-body);
-      font-size: 15px;
-      line-height: 1.6;
+    :root {
+      --bg: #FAF8F5;
+      --bg-surface: #FFFFFF;
+      --bg-subtle: #F2EFE9;
+      --text: #161514;
+      --text-muted: #827E76;
+      --text-ghost: #D2CEC4;
+      --terracotta: #D97757;
+      --terracotta-dark: #BF6243;
+      --terracotta-light: #FDF3EF;
+      --terracotta-glow: rgba(217, 119, 87, 0.18);
+      --border: #E6E2D8;
+      --border-dark: #C9C4B8;
+      --mono: 'JetBrains Mono', monospace;
+      --sans: 'Plus Jakarta Sans', -apple-system, BlinkMacSystemFont, sans-serif;
+    }
+
+    html {
+      font-family: var(--sans);
+      background-color: var(--bg);
+      color: var(--text);
+      scroll-behavior: smooth;
       -webkit-font-smoothing: antialiased;
     }
 
-    /* Architectural Frame Layout */
-    .outer-frame {
-      max-width: 1160px;
-      margin: 0 auto;
-      border-left: 1px solid var(--rule);
-      border-right: 1px solid var(--rule);
-      min-height: 100vh;
-      display: flex;
-      flex-direction: column;
-      background: var(--paper);
-    }
-
-    /* Top Spec Bar */
-    .spec-header {
-      display: flex;
-      align-items: center;
-      justify-content: space-between;
-      padding: 18px 28px;
-      border-bottom: 1px solid var(--rule);
-      background: var(--paper);
-      font-family: var(--font-mono);
-      font-size: 12px;
-      letter-spacing: -0.01em;
-    }
-
-    .brand-mark {
-      display: flex;
-      align-items: center;
-      gap: 14px;
-      text-decoration: none;
-      color: var(--ink);
-    }
-
-    .brand-mark svg {
-      width: 28px;
-      height: 28px;
-      flex-shrink: 0;
-    }
-
-    .brand-tagline {
-      display: flex;
-      flex-direction: column;
-      line-height: 1.2;
-    }
-
-    .brand-name {
-      font-weight: 700;
-      font-size: 14px;
-      letter-spacing: 0.05em;
-      text-transform: uppercase;
-    }
-
-    .brand-sub {
-      color: var(--ink-faint);
-      font-size: 11px;
-    }
-
-    .status-badge {
-      display: inline-flex;
-      align-items: center;
-      gap: 8px;
-      padding: 4px 10px;
-      background: var(--paper-card);
-      border: 1px solid var(--rule);
-      border-radius: 4px;
-      font-size: 11px;
-      color: var(--ink-muted);
-    }
-
-    .status-dot {
-      width: 6px;
-      height: 6px;
-      background: var(--green);
-      border-radius: 50%;
-      box-shadow: 0 0 0 2px rgba(27, 138, 90, 0.2);
-    }
-
-    .header-links {
-      display: flex;
-      align-items: center;
-      gap: 18px;
-    }
-
-    .header-links a {
-      color: var(--ink-muted);
-      text-decoration: none;
-      font-weight: 500;
-      transition: color 0.15s;
-    }
-    .header-links a:hover {
-      color: var(--terracotta);
-    }
-
-    /* Hero Section: Asymmetric Split Grid */
-    .hero-split {
-      display: grid;
-      grid-template-columns: 1.25fr 1fr;
-      border-bottom: 1px solid var(--rule);
-    }
-
-    .hero-main {
-      padding: 64px 44px;
-      border-right: 1px solid var(--rule);
-      display: flex;
-      flex-direction: column;
-      justify-content: center;
-    }
-
-    .eyebrow {
-      font-family: var(--font-mono);
-      font-size: 11px;
-      font-weight: 700;
-      letter-spacing: 0.12em;
-      text-transform: uppercase;
-      color: var(--terracotta);
-      margin-bottom: 20px;
-    }
-
-    h1 {
-      font-family: var(--font-display);
-      font-size: 44px;
-      font-weight: 700;
-      line-height: 1.12;
-      letter-spacing: -0.035em;
-      color: var(--ink);
-      margin-bottom: 24px;
-    }
-
-    h1 span.terracotta-text {
-      color: var(--terracotta);
-    }
-
-    .hero-lead {
-      font-size: 16px;
-      line-height: 1.65;
-      color: var(--ink-muted);
-      margin-bottom: 36px;
-      max-width: 540px;
-    }
-
-    /* Terminal Slip Box */
-    .terminal-slip {
-      background: var(--paper-card);
-      border: 1px solid var(--rule-dark);
-      border-radius: 4px;
-      padding: 14px 18px;
-      margin-bottom: 24px;
-      display: flex;
-      align-items: center;
-      justify-content: space-between;
-      gap: 12px;
-      box-shadow: 2px 2px 0px rgba(0, 0, 0, 0.04);
-    }
-
-    .terminal-code {
-      font-family: var(--font-mono);
-      font-size: 12.5px;
-      color: var(--ink);
-      overflow-x: auto;
-      white-space: nowrap;
-      scrollbar-width: none;
-    }
-    .terminal-code::-webkit-scrollbar { display: none; }
-    .term-prompt { color: var(--terracotta); user-select: none; font-weight: 700; margin-right: 8px; }
-
-    .copy-btn {
-      font-family: var(--font-mono);
-      font-size: 11px;
-      padding: 5px 12px;
-      background: var(--paper-sunken);
-      border: 1px solid var(--rule);
-      border-radius: 3px;
-      color: var(--ink);
-      cursor: pointer;
-      font-weight: 700;
-      text-transform: uppercase;
-      letter-spacing: 0.05em;
-      transition: all 0.15s;
-      flex-shrink: 0;
-    }
-    .copy-btn:hover {
-      background: var(--terracotta);
-      color: #FFFFFF;
-      border-color: var(--terracotta);
-    }
-
-    .hero-cta-row {
-      display: flex;
-      flex-wrap: wrap;
-      align-items: center;
-      gap: 12px;
-    }
-
-    .btn-action {
-      display: inline-flex;
-      align-items: center;
-      gap: 8px;
-      padding: 11px 20px;
-      background: var(--terracotta);
-      color: #FFFFFF;
-      border: 1px solid var(--terracotta);
-      border-radius: 4px;
-      font-family: var(--font-mono);
-      font-size: 12px;
-      font-weight: 700;
-      text-transform: uppercase;
-      letter-spacing: 0.05em;
-      text-decoration: none;
-      box-shadow: 2px 2px 0px #974026;
-      transition: all 0.1s;
-    }
-    .btn-action:hover {
-      transform: translate(-1px, -1px);
-      box-shadow: 3px 3px 0px #974026;
-    }
-    .btn-action:active {
-      transform: translate(1px, 1px);
-      box-shadow: 1px 1px 0px #974026;
-    }
-
-    .btn-secondary {
-      display: inline-flex;
-      align-items: center;
-      gap: 8px;
-      padding: 11px 18px;
-      background: var(--paper-card);
-      color: var(--ink);
-      border: 1px solid var(--rule-dark);
-      border-radius: 4px;
-      font-family: var(--font-mono);
-      font-size: 12px;
-      font-weight: 700;
-      text-transform: uppercase;
-      letter-spacing: 0.05em;
-      text-decoration: none;
-      box-shadow: 2px 2px 0px rgba(0, 0, 0, 0.05);
-      transition: all 0.15s;
-    }
-    .btn-secondary:hover {
-      border-color: var(--ink);
-    }
-
-    /* Right Column: Interactive Drop Simulator */
-    .hero-interactive {
-      background: var(--paper-card);
-      padding: 44px 36px;
-      display: flex;
-      flex-direction: column;
-      justify-content: space-between;
-      position: relative;
-    }
-
-    .interactive-header {
-      display: flex;
-      align-items: center;
-      justify-content: space-between;
-      margin-bottom: 24px;
-      border-bottom: 1px dashed var(--rule);
-      padding-bottom: 12px;
-    }
-
-    .sim-tag {
-      font-family: var(--font-mono);
-      font-size: 11px;
-      font-weight: 700;
-      text-transform: uppercase;
-      letter-spacing: 0.08em;
-      color: var(--ink-faint);
-    }
-
-    .interactive-stage {
-      flex: 1;
-      display: flex;
-      flex-direction: column;
-      align-items: center;
-      justify-content: center;
-      position: relative;
-      padding: 20px 0;
-    }
-
-    /* Live Interactive SVG Bin */
-    .bin-dropzone {
-      position: relative;
-      width: 140px;
-      height: 160px;
-      cursor: pointer;
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      transition: transform 0.2s cubic-bezier(0.34, 1.56, 0.64, 1);
-    }
-    .bin-dropzone.drag-over {
-      transform: scale(1.1);
-    }
-
-    .bin-speech-bubble {
-      position: absolute;
-      top: -16px;
-      background: var(--ink);
-      color: #FFF;
-      font-family: var(--font-mono);
-      font-size: 10px;
-      font-weight: 700;
-      padding: 3px 8px;
-      border-radius: 4px;
-      letter-spacing: 0.05em;
-      text-transform: uppercase;
-      transition: all 0.2s;
-    }
-    .bin-dropzone.drag-over .bin-speech-bubble {
-      background: var(--terracotta);
-    }
-
-    .bin-img-art {
-      width: 105px;
-      height: 130px;
-      object-fit: contain;
-      filter: drop-shadow(0 14px 18px rgba(0,0,0,0.12));
-    }
-
-    /* Draggable Resource Chips */
-    .chips-label {
-      font-family: var(--font-mono);
-      font-size: 11px;
-      color: var(--ink-muted);
-      margin-bottom: 8px;
-      align-self: flex-start;
-      text-transform: uppercase;
-      letter-spacing: 0.05em;
-    }
-
-    .draggable-chips {
-      display: flex;
-      flex-wrap: wrap;
-      gap: 8px;
-      margin-bottom: 16px;
-      width: 100%;
-    }
-
-    .chip-item {
-      background: var(--paper-sunken);
-      border: 1px solid var(--rule-dark);
-      padding: 7px 12px;
-      border-radius: 4px;
-      font-size: 12px;
-      font-weight: 500;
-      color: var(--ink);
-      cursor: grab;
-      user-select: none;
-      transition: all 0.15s;
-      display: inline-flex;
-      align-items: center;
-      gap: 6px;
-    }
-    .chip-item:hover {
-      background: var(--paper-card);
-      border-color: var(--terracotta);
-      transform: translateY(-1px);
-    }
-    .chip-item:active {
-      cursor: grabbing;
-    }
-    .chip-item.dropped {
-      opacity: 0.35;
-      text-decoration: line-through;
-      pointer-events: none;
-    }
-
-    /* Live Output Simulation Feed */
-    .sim-terminal-log {
-      width: 100%;
-      background: var(--paper-sunken);
-      border: 1px solid var(--rule);
-      border-radius: 4px;
-      padding: 10px 14px;
-      font-family: var(--font-mono);
-      font-size: 11px;
-      min-height: 48px;
-      display: flex;
-      align-items: center;
-      color: var(--ink-muted);
-    }
-    .sim-terminal-log.success {
-      color: var(--green);
-      background: rgba(27, 138, 90, 0.08);
-      border-color: rgba(27, 138, 90, 0.3);
-    }
-
-    /* System Specification Grid (Architectural Ledger) */
-    .spec-grid {
-      display: grid;
-      grid-template-columns: repeat(4, 1fr);
-      border-bottom: 1px solid var(--rule);
-      background: var(--paper);
-    }
-
-    .spec-cell {
-      padding: 32px 28px;
-      border-right: 1px solid var(--rule);
-    }
-    .spec-cell:last-child {
-      border-right: none;
-    }
-
-    .spec-metric {
-      font-family: var(--font-display);
-      font-size: 38px;
-      font-weight: 700;
-      line-height: 1;
-      color: var(--ink);
-      margin-bottom: 8px;
-      letter-spacing: -0.03em;
-    }
-    .spec-metric.accent {
-      color: var(--terracotta);
-    }
-
-    .spec-title {
-      font-family: var(--font-mono);
-      font-size: 11px;
-      font-weight: 700;
-      text-transform: uppercase;
-      letter-spacing: 0.08em;
-      color: var(--ink-muted);
-      margin-bottom: 6px;
-    }
-
-    .spec-desc {
-      font-size: 13px;
-      color: var(--ink-muted);
+    body {
+      overflow-x: hidden;
       line-height: 1.5;
     }
 
-    /* 3-Step Execution Ledger */
-    .protocol-header {
-      padding: 40px 28px 20px;
-      border-bottom: 1px solid var(--rule);
+    /* Ambient paper grain subtle texture */
+    body::before {
+      content: "";
+      position: fixed;
+      top: 0; left: 0; width: 100%; height: 100%;
+      pointer-events: none;
+      opacity: 0.025;
+      background-image: radial-gradient(#000 1px, transparent 1px);
+      background-size: 24px 24px;
+      z-index: 999;
+    }
+
+    /* Minimal Floating Top Header */
+    nav {
+      position: fixed;
+      top: 20px;
+      left: 50%;
+      transform: translateX(-50%);
+      width: calc(100% - 40px);
+      max-width: 960px;
       display: flex;
-      align-items: flex-end;
+      align-items: center;
       justify-content: space-between;
+      padding: 10px 18px;
+      background: rgba(250, 248, 245, 0.82);
+      backdrop-filter: blur(16px);
+      -webkit-backdrop-filter: blur(16px);
+      border: 1px solid rgba(230, 226, 216, 0.85);
+      border-radius: 999px;
+      z-index: 100;
+      box-shadow: 0 4px 20px rgba(0, 0, 0, 0.03);
+      transition: all 0.3s ease;
     }
 
-    .protocol-title {
-      font-family: var(--font-display);
-      font-size: 26px;
+    .brand {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      text-decoration: none;
+      color: var(--text);
       font-weight: 700;
-      letter-spacing: -0.02em;
-    }
-
-    .protocol-grid {
-      display: grid;
-      grid-template-columns: repeat(3, 1fr);
-      border-bottom: 1px solid var(--rule);
-      background: var(--paper-card);
-    }
-
-    .protocol-column {
-      padding: 36px 28px;
-      border-right: 1px solid var(--rule);
-    }
-    .protocol-column:last-child {
-      border-right: none;
-    }
-
-    .step-badge {
-      font-family: var(--font-mono);
-      font-size: 11px;
-      font-weight: 700;
-      color: var(--terracotta);
-      background: var(--terracotta-tint);
-      padding: 3px 8px;
-      border-radius: 3px;
-      display: inline-block;
-      margin-bottom: 16px;
-    }
-
-    .protocol-col-title {
-      font-family: var(--font-display);
-      font-size: 18px;
-      font-weight: 700;
-      margin-bottom: 10px;
+      font-size: 0.95rem;
       letter-spacing: -0.01em;
     }
 
-    .protocol-col-body {
-      font-size: 13.5px;
-      color: var(--ink-muted);
-      line-height: 1.6;
+    .brand-icon {
+      width: 26px;
+      height: 26px;
     }
 
-    /* Visual Previews Strip */
-    .visual-strip {
-      display: grid;
-      grid-template-columns: 1fr 1fr;
-      border-bottom: 1px solid var(--rule);
-      background: var(--paper);
+    .nav-tag {
+      font-family: var(--mono);
+      font-size: 0.7rem;
+      background: var(--terracotta-light);
+      color: var(--terracotta);
+      padding: 2px 8px;
+      border-radius: 999px;
+      font-weight: 600;
     }
 
-    .visual-pane {
-      padding: 36px 28px;
-      border-right: 1px solid var(--rule);
+    .nav-actions {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+    }
+
+    .nav-btn {
+      text-decoration: none;
+      font-size: 0.85rem;
+      font-weight: 600;
+      padding: 6px 14px;
+      border-radius: 999px;
+      transition: all 0.2s ease;
+    }
+
+    .nav-btn-subtle {
+      color: var(--text-muted);
+    }
+    .nav-btn-subtle:hover {
+      color: var(--text);
+    }
+
+    .nav-btn-primary {
+      background: var(--text);
+      color: var(--bg);
+    }
+    .nav-btn-primary:hover {
+      background: #000;
+      transform: translateY(-1px);
+    }
+
+    /* Scroll Reveal Baseline */
+    .reveal {
+      opacity: 0;
+      transform: translateY(32px);
+      transition: opacity 0.8s cubic-bezier(0.16, 1, 0.3, 1), transform 0.8s cubic-bezier(0.16, 1, 0.3, 1);
+      will-change: opacity, transform;
+    }
+
+    .reveal.active {
+      opacity: 1;
+      transform: translateY(0);
+    }
+
+    .reveal-delay-1 { transition-delay: 0.12s; }
+    .reveal-delay-2 { transition-delay: 0.24s; }
+    .reveal-delay-3 { transition-delay: 0.36s; }
+
+    /* SECTION 1: HERO */
+    .hero-section {
+      min-height: 100vh;
       display: flex;
       flex-direction: column;
-      justify-content: space-between;
-    }
-    .visual-pane:last-child {
-      border-right: none;
+      align-items: center;
+      justify-content: center;
+      text-align: center;
+      padding: 140px 24px 80px;
+      position: relative;
     }
 
-    .preview-canvas {
-      background: var(--paper-card);
-      border: 1px solid var(--rule);
-      border-radius: 4px;
-      padding: 24px;
-      min-height: 200px;
+    .hero-hopper-container {
+      position: relative;
+      width: 140px;
+      height: 140px;
+      margin-bottom: 40px;
       display: flex;
       align-items: center;
       justify-content: center;
-      margin-bottom: 16px;
     }
 
-    .preview-canvas img {
-      max-width: 100%;
-      height: auto;
-      max-height: 160px;
-      object-fit: contain;
+    .hero-hopper-halo {
+      position: absolute;
+      inset: -16px;
+      background: radial-gradient(circle, var(--terracotta-glow) 0%, transparent 70%);
+      border-radius: 50%;
+      animation: pulseGlow 4s ease-in-out infinite alternate;
     }
 
-    .pane-title {
-      font-family: var(--font-display);
-      font-size: 16px;
-      font-weight: 700;
-      margin-bottom: 4px;
-    }
-    .pane-desc {
-      font-size: 13px;
-      color: var(--ink-muted);
+    @keyframes pulseGlow {
+      0% { transform: scale(0.9); opacity: 0.5; }
+      100% { transform: scale(1.15); opacity: 1; }
     }
 
-    /* Downloads Manifest Table */
-    .manifest-section {
-      padding: 44px 28px;
-      border-bottom: 1px solid var(--rule);
+    .hero-hopper-svg {
+      width: 110px;
+      height: 110px;
+      position: relative;
+      z-index: 2;
+      filter: drop-shadow(0 12px 28px rgba(217, 119, 87, 0.24));
+      transition: transform 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275);
     }
 
-    .manifest-table {
-      width: 100%;
-      border-collapse: collapse;
-      font-family: var(--font-mono);
-      font-size: 12px;
-      background: var(--paper-card);
-      border: 1px solid var(--rule-dark);
-      margin-top: 16px;
+    .hero-hopper-container:hover .hero-hopper-svg {
+      transform: scale(1.08) rotate(4deg);
     }
 
-    .manifest-table th {
-      text-align: left;
-      padding: 12px 18px;
-      background: var(--paper-sunken);
-      border-bottom: 1px solid var(--rule-dark);
-      font-size: 11px;
-      text-transform: uppercase;
-      letter-spacing: 0.06em;
-      color: var(--ink-muted);
+    .hero-headline {
+      font-size: clamp(2.8rem, 7vw, 6.2rem);
+      font-weight: 800;
+      letter-spacing: -0.04em;
+      line-height: 1.04;
+      max-width: 920px;
+      margin-bottom: 24px;
+      color: var(--text);
     }
 
-    .manifest-table td {
-      padding: 14px 18px;
-      border-bottom: 1px solid var(--rule);
-      vertical-align: middle;
-    }
-    .manifest-table tr:last-child td {
-      border-bottom: none;
-    }
-    .manifest-table tr:hover td {
-      background: var(--paper);
-    }
-
-    .table-target {
-      font-weight: 700;
-      color: var(--ink);
-    }
-    .table-detail {
-      color: var(--ink-muted);
-    }
-
-    .table-btn {
-      display: inline-block;
-      padding: 4px 10px;
-      background: var(--paper-sunken);
-      border: 1px solid var(--rule-dark);
-      border-radius: 3px;
-      color: var(--ink);
-      text-decoration: none;
-      font-weight: 700;
-      transition: all 0.15s;
-    }
-    .table-btn:hover {
-      background: var(--terracotta);
-      color: #FFF;
-      border-color: var(--terracotta);
-    }
-
-    /* Monospace Minimal Footer */
-    footer {
-      padding: 24px 28px;
-      display: flex;
-      align-items: center;
-      justify-content: space-between;
-      font-family: var(--font-mono);
-      font-size: 11px;
-      color: var(--ink-faint);
-    }
-
-    footer a {
-      color: var(--ink-muted);
-      text-decoration: none;
-    }
-    footer a:hover {
+    .hero-headline .accent {
       color: var(--terracotta);
     }
 
-    /* Responsive adjustments */
-    @media (max-width: 880px) {
-      .hero-split { grid-template-columns: 1fr; }
-      .hero-main { border-right: none; border-bottom: 1px solid var(--rule); padding: 40px 24px; }
-      .hero-interactive { padding: 36px 24px; }
-      .spec-grid { grid-template-columns: 1fr 1fr; }
-      .spec-cell { border-bottom: 1px solid var(--rule); }
-      .spec-cell:nth-child(2) { border-right: none; }
-      .protocol-grid { grid-template-columns: 1fr; }
-      .protocol-column { border-right: none; border-bottom: 1px solid var(--rule); }
-      .visual-strip { grid-template-columns: 1fr; }
-      .visual-pane { border-right: none; border-bottom: 1px solid var(--rule); }
-      h1 { font-size: 34px; }
+    .hero-subhead {
+      font-size: clamp(1.1rem, 2.2vw, 1.45rem);
+      color: var(--text-muted);
+      max-width: 620px;
+      margin-bottom: 44px;
+      font-weight: 400;
+      letter-spacing: -0.01em;
+    }
+
+    .hero-install-pill {
+      display: inline-flex;
+      align-items: center;
+      gap: 14px;
+      background: var(--bg-surface);
+      border: 1px solid var(--border);
+      padding: 10px 18px 10px 22px;
+      border-radius: 999px;
+      font-family: var(--mono);
+      font-size: 0.88rem;
+      color: var(--text);
+      box-shadow: 0 4px 16px rgba(0, 0, 0, 0.03);
+      cursor: pointer;
+      user-select: none;
+      transition: all 0.2s ease;
+    }
+
+    .hero-install-pill:hover {
+      border-color: var(--terracotta);
+      box-shadow: 0 6px 24px var(--terracotta-glow);
+      transform: translateY(-2px);
+    }
+
+    .hero-install-pill .prompt {
+      color: var(--terracotta);
+      font-weight: 600;
+    }
+
+    .copy-btn {
+      background: var(--terracotta-light);
+      color: var(--terracotta);
+      border: none;
+      padding: 6px 12px;
+      border-radius: 999px;
+      font-size: 0.75rem;
+      font-weight: 600;
+      font-family: var(--sans);
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      gap: 5px;
+      transition: background 0.2s ease;
+    }
+
+    .copy-btn:hover {
+      background: var(--terracotta);
+      color: #fff;
+    }
+
+    .scroll-indicator {
+      position: absolute;
+      bottom: 30px;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 8px;
+      font-size: 0.75rem;
+      font-family: var(--mono);
+      text-transform: uppercase;
+      letter-spacing: 0.1em;
+      color: var(--text-muted);
+      opacity: 0.7;
+      animation: bounceIndicator 2.4s ease-in-out infinite;
+    }
+
+    @keyframes bounceIndicator {
+      0%, 20%, 50%, 80%, 100% { transform: translateY(0); }
+      40% { transform: translateY(6px); }
+      60% { transform: translateY(3px); }
+    }
+
+    /* SECTION 2: SCROLL-DRIVEN PROBLEM STATEMENTS */
+    .statement-section {
+      min-height: 120vh;
+      display: flex;
+      flex-direction: column;
+      justify-content: center;
+      align-items: center;
+      padding: 140px 24px;
+      position: relative;
+    }
+
+    .statement-container {
+      max-width: 860px;
+      display: flex;
+      flex-direction: column;
+      gap: 48px;
+    }
+
+    .statement-line {
+      font-size: clamp(2rem, 4.5vw, 3.8rem);
+      font-weight: 700;
+      letter-spacing: -0.035em;
+      line-height: 1.2;
+      color: var(--text-ghost);
+      transition: color 0.4s ease;
+    }
+
+    .statement-line.lit {
+      color: var(--text);
+    }
+
+    .statement-line.lit .highlight {
+      color: var(--terracotta);
+    }
+
+    /* SECTION 3: THE 4-STEP RITUAL (Sticky presentation) */
+    .ritual-section {
+      position: relative;
+      padding: 100px 24px 140px;
+      max-width: 1100px;
+      margin: 0 auto;
+    }
+
+    .section-eyebrow {
+      font-family: var(--mono);
+      font-size: 0.75rem;
+      text-transform: uppercase;
+      letter-spacing: 0.12em;
+      color: var(--terracotta);
+      font-weight: 600;
+      margin-bottom: 12px;
+    }
+
+    .section-title {
+      font-size: clamp(2rem, 4vw, 3.4rem);
+      font-weight: 800;
+      letter-spacing: -0.03em;
+      line-height: 1.1;
+      margin-bottom: 70px;
+    }
+
+    .ritual-grid {
+      display: grid;
+      grid-template-columns: 1fr;
+      gap: 28px;
+    }
+
+    @media (min-width: 768px) {
+      .ritual-grid {
+        grid-template-columns: repeat(2, 1fr);
+        gap: 32px;
+      }
+    }
+
+    .ritual-card {
+      background: var(--bg-surface);
+      border: 1px solid var(--border);
+      border-radius: 24px;
+      padding: 44px 38px;
+      display: flex;
+      flex-direction: column;
+      justify-content: space-between;
+      min-height: 360px;
+      position: relative;
+      overflow: hidden;
+      transition: all 0.4s cubic-bezier(0.16, 1, 0.3, 1);
+    }
+
+    .ritual-card:hover {
+      border-color: var(--terracotta);
+      box-shadow: 0 16px 40px rgba(217, 119, 87, 0.08);
+      transform: translateY(-4px);
+    }
+
+    .ritual-card-num {
+      font-family: var(--mono);
+      font-size: 0.85rem;
+      font-weight: 600;
+      color: var(--terracotta);
+      margin-bottom: 24px;
+    }
+
+    .ritual-card-title {
+      font-size: 2.2rem;
+      font-weight: 800;
+      letter-spacing: -0.03em;
+      line-height: 1.15;
+      margin-bottom: 16px;
+    }
+
+    .ritual-card-desc {
+      font-size: 1.1rem;
+      color: var(--text-muted);
+      line-height: 1.5;
+      margin-bottom: 32px;
+      max-width: 360px;
+    }
+
+    /* Minimalist Card Visual Emblems */
+    .ritual-visual {
+      height: 100px;
+      display: flex;
+      align-items: center;
+      position: relative;
+    }
+
+    /* Visual 1: Drop chip hovering */
+    .drop-visual-chip {
+      background: var(--bg-subtle);
+      border: 1px dashed var(--border-dark);
+      padding: 10px 18px;
+      border-radius: 12px;
+      font-family: var(--mono);
+      font-size: 0.8rem;
+      color: var(--text);
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      box-shadow: 0 6px 18px rgba(0, 0, 0, 0.04);
+      animation: floatChip 3s ease-in-out infinite;
+    }
+
+    @keyframes floatChip {
+      0%, 100% { transform: translateY(0); }
+      50% { transform: translateY(-8px); }
+    }
+
+    /* Visual 2: Time selector wheel */
+    .time-visual-pills {
+      display: flex;
+      gap: 8px;
+      flex-wrap: wrap;
+    }
+
+    .time-visual-pill {
+      font-family: var(--mono);
+      font-size: 0.75rem;
+      padding: 6px 14px;
+      border-radius: 999px;
+      background: var(--bg-subtle);
+      border: 1px solid var(--border);
+      color: var(--text-muted);
+    }
+
+    .time-visual-pill.active {
+      background: var(--terracotta-light);
+      border-color: var(--terracotta);
+      color: var(--terracotta);
+      font-weight: 600;
+    }
+
+    /* Visual 3: Minimizes to zero */
+    .vanish-visual-dot {
+      width: 44px;
+      height: 44px;
+      border-radius: 50%;
+      background: var(--terracotta-light);
+      border: 2px solid var(--terracotta);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      position: relative;
+    }
+
+    .vanish-visual-dot::after {
+      content: "";
+      width: 10px;
+      height: 10px;
+      background: var(--terracotta);
+      border-radius: 50%;
+      animation: ping 2s cubic-bezier(0, 0, 0.2, 1) infinite;
+    }
+
+    @keyframes ping {
+      75%, 100% { transform: scale(2.4); opacity: 0; }
+    }
+
+    /* Visual 4: Native notification */
+    .notif-visual-toast {
+      background: #FFFFFF;
+      border: 1px solid var(--border);
+      border-left: 4px solid var(--terracotta);
+      border-radius: 10px;
+      padding: 10px 16px;
+      box-shadow: 0 8px 24px rgba(0, 0, 0, 0.06);
+      width: 100%;
+      max-width: 280px;
+    }
+
+    .notif-title {
+      font-weight: 700;
+      font-size: 0.8rem;
+      color: var(--text);
+    }
+
+    .notif-subtitle {
+      font-size: 0.72rem;
+      color: var(--text-muted);
+    }
+
+    /* SECTION 4: THE HARDWARE NUMBERS */
+    .metrics-section {
+      padding: 140px 24px;
+      max-width: 1040px;
+      margin: 0 auto;
+      text-align: center;
+    }
+
+    .metrics-header {
+      margin-bottom: 70px;
+    }
+
+    .metrics-grid {
+      display: grid;
+      grid-template-columns: repeat(2, 1fr);
+      gap: 40px 24px;
+    }
+
+    @media (min-width: 768px) {
+      .metrics-grid {
+        grid-template-columns: repeat(4, 1fr);
+      }
+    }
+
+    .metric-item {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+    }
+
+    .metric-val {
+      font-size: clamp(3rem, 5vw, 4.8rem);
+      font-weight: 800;
+      letter-spacing: -0.04em;
+      line-height: 1;
+      color: var(--text);
+      margin-bottom: 12px;
+      font-feature-settings: "tnum";
+    }
+
+    .metric-label {
+      font-size: 1rem;
+      font-weight: 600;
+      color: var(--text);
+      margin-bottom: 4px;
+    }
+
+    .metric-sub {
+      font-size: 0.85rem;
+      color: var(--text-muted);
+    }
+
+    /* SECTION 5: ONE COMMAND INSTALL & RELEASES */
+    .install-section {
+      padding: 120px 24px 160px;
+      text-align: center;
+      background: radial-gradient(circle at center top, var(--terracotta-light) 0%, transparent 60%);
+    }
+
+    .install-box {
+      max-width: 760px;
+      margin: 0 auto;
+      background: var(--bg-surface);
+      border: 1px solid var(--border);
+      border-radius: 28px;
+      padding: 56px 40px;
+      box-shadow: 0 16px 48px rgba(0, 0, 0, 0.04);
+    }
+
+    .install-box h2 {
+      font-size: clamp(2.2rem, 4vw, 3.4rem);
+      font-weight: 800;
+      letter-spacing: -0.035em;
+      margin-bottom: 16px;
+    }
+
+    .install-box p {
+      color: var(--text-muted);
+      font-size: 1.15rem;
+      margin-bottom: 36px;
+    }
+
+    .install-cli-card {
+      background: var(--bg);
+      border: 1px solid var(--border-dark);
+      border-radius: 16px;
+      padding: 16px 20px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 16px;
+      font-family: var(--mono);
+      font-size: 0.9rem;
+      margin-bottom: 32px;
+      overflow-x: auto;
+    }
+
+    .install-cli-text {
+      color: var(--text);
+      white-space: nowrap;
+    }
+
+    .install-cli-card button {
+      flex-shrink: 0;
+    }
+
+    .install-btn-group {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 16px;
+      flex-wrap: wrap;
+    }
+
+    .btn-download {
+      display: inline-flex;
+      align-items: center;
+      gap: 10px;
+      background: var(--terracotta);
+      color: #fff;
+      padding: 14px 28px;
+      border-radius: 999px;
+      text-decoration: none;
+      font-weight: 700;
+      font-size: 0.95rem;
+      box-shadow: 0 6px 20px var(--terracotta-glow);
+      transition: all 0.2s ease;
+    }
+
+    .btn-download:hover {
+      background: var(--terracotta-dark);
+      transform: translateY(-2px);
+      box-shadow: 0 8px 28px rgba(217, 119, 87, 0.35);
+    }
+
+    .btn-github {
+      display: inline-flex;
+      align-items: center;
+      gap: 10px;
+      background: var(--bg);
+      border: 1px solid var(--border);
+      color: var(--text);
+      padding: 14px 28px;
+      border-radius: 999px;
+      text-decoration: none;
+      font-weight: 600;
+      font-size: 0.95rem;
+      transition: all 0.2s ease;
+    }
+
+    .btn-github:hover {
+      border-color: var(--text);
+      transform: translateY(-2px);
+    }
+
+    /* FOOTER */
+    footer {
+      border-top: 1px solid var(--border);
+      padding: 40px 24px;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      gap: 12px;
+      font-size: 0.85rem;
+      color: var(--text-muted);
+      text-align: center;
+    }
+
+    footer a {
+      color: var(--text);
+      text-decoration: none;
+      font-weight: 600;
+    }
+
+    footer a:hover {
+      color: var(--terracotta);
     }
   </style>
 </head>
 <body>
 
-  <div class="outer-frame">
-    <!-- Top Spec Bar -->
-    <header class="spec-header">
-      <a href="#" class="brand-mark">
-        <svg viewBox="0 0 100 100" fill="none">
-          <g stroke="#D97757" stroke-width="11.5" stroke-linecap="round" stroke-linejoin="round">
-            <path d="M 72.82 76.00 A 33 33 0 1 1 72.82 24.00" />
-            <path d="M 44.5 34 L 60.5 50 L 44.5 66" />
-            <path d="M 64.5 34 L 80.5 50 L 64.5 66" />
-          </g>
-        </svg>
-        <div class="brand-tagline">
-          <span class="brand-name">ForwardBin</span>
-          <span class="brand-sub">Native Rust Assistant</span>
-        </div>
-      </a>
+  <!-- Floating Navigation -->
+  <nav>
+    <a href="#" class="brand">
+      <img src="logo.svg" alt="ForwardBin Icon" class="brand-icon">
+      <span>ForwardBin</span>
+      <span class="nav-tag">v1.0.0</span>
+    </a>
+    <div class="nav-actions">
+      <a href="https://github.com/s-chudmunge/forwardbin" target="_blank" rel="noopener" class="nav-btn nav-btn-subtle">GitHub</a>
+      <a href="#install" class="nav-btn nav-btn-primary">Get ForwardBin</a>
+    </div>
+  </nav>
 
-      <div class="status-badge">
-        <span class="status-dot"></span>
-        <span>SYS.STATUS: OPERATIONAL v1.0.0</span>
-      </div>
-
-      <nav class="header-links">
-        <a href="#spec">Specs</a>
-        <a href="#protocol">Protocol</a>
-        <a href="#downloads">Downloads</a>
-        <a href="https://github.com/s-chudmunge/forwardbin" target="_blank" rel="noopener noreferrer">GitHub ↗</a>
-      </nav>
-    </header>
-
-    <!-- Asymmetric Hero Split -->
-    <section class="hero-split">
-      <div class="hero-main">
-        <div class="eyebrow">// ZERO-ELECTRON DESKTOP DROP BIN</div>
-        <h1>
-          Bookmarks are where good papers <span class="terracotta-text">go to die.</span>
-        </h1>
-        <p class="hero-lead">
-          You won't watch that 45-minute YouTube lecture in your tab graveyard. ForwardBin places a fast, translucent drop bin on your desktop. Drag a paper, video, or webinar link, and Jarvis converts foreign timezones, auto-reserves a free calendar slot, and emails you a clean briefing when your slot begins.
-        </p>
-
-        <!-- Direct Install Slip -->
-        <div class="terminal-slip">
-          <div class="terminal-code">
-            <span class="term-prompt">$</span>curl -sSL https://raw.githubusercontent.com/s-chudmunge/forwardbin/main/install.sh | bash
-          </div>
-          <button class="copy-btn" id="copyBtn" onclick="copyInstall()">Copy</button>
-        </div>
-
-        <div class="hero-cta-row">
-          <a href="https://github.com/s-chudmunge/forwardbin/releases/download/v1.0.0/forwardbin-installer.run" class="btn-action">
-            Download .run (3.9 MB)
-          </a>
-          <a href="https://github.com/s-chudmunge/forwardbin" target="_blank" rel="noopener noreferrer" class="btn-secondary">
-            Inspect Source ↗
-          </a>
-        </div>
-      </div>
-
-      <!-- Right Column: Interactive Drop Simulator -->
-      <div class="hero-interactive">
-        <div class="interactive-header">
-          <span class="sim-tag">SANDBOX TEST DRIVE</span>
-          <span style="font-family:var(--font-mono); font-size:11px; color:var(--terracotta);">DRAG & DROP BELOW</span>
-        </div>
-
-        <div class="interactive-stage">
-          <div class="bin-dropzone" id="binDropzone" ondragover="handleDragOver(event)" ondragleave="handleDragLeave(event)" ondrop="handleDrop(event)" onclick="handleBinClick()">
-            <div class="bin-speech-bubble" id="binBubble">FEED ME!</div>
-            <img src="bin_terracotta_preview.png" alt="ForwardBin Drop Widget" class="bin-img-art">
-          </div>
-        </div>
-
-        <div class="chips-label">Sample items to test (drag one into the bin):</div>
-        <div class="draggable-chips">
-          <div class="chip-item" draggable="true" ondragstart="handleDragStart(event, 'Georgetown MS Info Session (EDT)', 30, 'event')">
-            <span>📅</span> MS Bioinformatics Webinar (EDT)
-          </div>
-          <div class="chip-item" draggable="true" ondragstart="handleDragStart(event, 'arXiv:2403.05530 (Diffusion Models)', 45, 'paper')">
-            <span>📄</span> arXiv:2403.05530 (45m paper)
-          </div>
-          <div class="chip-item" draggable="true" ondragstart="handleDragStart(event, 'Karpathy: Intro to LLMs Lecture', 60, 'video')">
-            <span>▶️</span> YouTube: LLM Talk (1h)
-          </div>
-        </div>
-
-        <div class="sim-terminal-log" id="simLog">
-          [JARVIS READY] Drag any chip above or click bin to simulate slot reservation...
-        </div>
-      </div>
-    </section>
-
-    <!-- Hardware-Grade Spec Sheet Grid -->
-    <section class="spec-grid" id="spec">
-      <div class="spec-cell">
-        <div class="spec-metric accent">&lt; 8 MB</div>
-        <div class="spec-title">Memory Footprint</div>
-        <p class="spec-desc">Deterministic RAII deallocation via native Rust. No garbage collector, zero Electron overhead.</p>
-      </div>
-      <div class="spec-cell">
-        <div class="spec-metric">4 ms</div>
-        <div class="spec-title">Cold CLI Latency</div>
-        <p class="spec-desc">Compiled with whole-program Fat LTO and SQLite WAL mode for instant terminal invocation.</p>
-      </div>
-      <div class="spec-cell">
-        <div class="spec-metric">0.0%</div>
-        <div class="spec-title">Idle CPU Usage</div>
-        <p class="spec-desc">Adaptive 60 FPS spring physics while dragging, relinquishes CPU entirely when resting.</p>
-      </div>
-      <div class="spec-cell">
-        <div class="spec-metric accent">D-Bus</div>
-        <div class="spec-title">Native IPC</div>
-        <p class="spec-desc">Pure in-process D-Bus notifications over zbus and arboard clipboard without subprocess forks.</p>
-      </div>
-    </section>
-
-    <!-- The 3-Step Protocol Ledger -->
-    <div class="protocol-header" id="protocol">
-      <div class="protocol-title">How It Works</div>
-      <div style="font-family:var(--font-mono); font-size:11px; color:var(--ink-faint);">PIPELINE MANIFEST // 01-03</div>
+  <!-- SCENE 1: HERO -->
+  <section class="hero-section">
+    <div class="hero-hopper-container reveal">
+      <div class="hero-hopper-halo"></div>
+      <img src="logo.svg" alt="ForwardBin Terracotta Hopper" class="hero-hopper-svg">
     </div>
 
-    <section class="protocol-grid">
-      <div class="protocol-column">
-        <span class="step-badge">STEP 01</span>
-        <h3 class="protocol-col-title">Frictionless Ingestion</h3>
-        <p class="protocol-col-body">
-          Drag links, PDFs, or highlighted text into the desktop bin, hit your global hotkey <kbd style="font-family:var(--font-mono); background:var(--paper-sunken); padding:1px 5px; border-radius:3px; border:1px solid var(--rule);">Super+Shift+F</kbd>, or pipe from the command line with <code style="font-family:var(--font-mono); font-size:12px;">forwardbin add</code>.
-        </p>
-      </div>
+    <h1 class="hero-headline reveal reveal-delay-1">
+      Drop it. Forget it.<br>
+      <span class="accent">We’ll remind you.</span>
+    </h1>
 
-      <div class="protocol-column">
-        <span class="step-badge">STEP 02</span>
-        <h3 class="protocol-col-title">Deep Content & Timezone Logic</h3>
-        <p class="protocol-col-body">
-          Jarvis parses hidden event dates, estimates reading duration, deterministically converts foreign timezones (e.g. EDT ➔ local IST), and finds an open, collision-free slot in your calendar schedule.
-        </p>
-      </div>
+    <p class="hero-subhead reveal reveal-delay-2">
+      A lightweight floating drop bin for Linux.<br>
+      Drag any link, snippet, or file—forward it to your future self.
+    </p>
 
-      <div class="protocol-column">
-        <span class="step-badge">STEP 03</span>
-        <h3 class="protocol-col-title">Focus Chimes & Inbox Briefs</h3>
-        <p class="protocol-col-body">
-          The moment your scheduled slot arrives, Jarvis triggers a desktop alert and delivers a clean, high-contrast Gmail briefing with key takeaways and direct source links ready for deep focus.
-        </p>
-      </div>
-    </section>
+    <div class="hero-install-pill reveal reveal-delay-3" id="quickInstallPill">
+      <span class="prompt">$</span>
+      <span class="cmd">curl -sSL https://git.io/forwardbin | bash</span>
+      <button class="copy-btn" id="heroCopyBtn" aria-label="Copy installation command">
+        <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+          <rect x="9" y="9" width="13" height="13" rx="2" ry="2"></rect>
+          <path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"></path>
+        </svg>
+        <span>Copy</span>
+      </button>
+    </div>
 
-    <!-- Visual Strip: Bin & Dashboard -->
-    <section class="visual-strip">
-      <div class="visual-pane">
-        <div class="preview-canvas">
-          <img src="bin_terracotta_preview.png" alt="Desktop Drop Bin Preview">
-        </div>
+    <div class="scroll-indicator">
+      <span>Scroll to explore</span>
+      <span>↓</span>
+    </div>
+  </section>
+
+  <!-- SCENE 2: THE PROBLEM (Scroll-driven illuminate) -->
+  <section class="statement-section" id="statements">
+    <div class="statement-container">
+      <div class="statement-line" data-scroll-highlight>
+        You have 40 tabs open because <span class="highlight">“you’ll read them later.”</span>
+      </div>
+      <div class="statement-line" data-scroll-highlight>
+        Your clipboard is full of links you <span class="highlight">don’t want to lose.</span>
+      </div>
+      <div class="statement-line" data-scroll-highlight>
+        Your desktop is <span class="highlight">not a to-do list.</span>
+      </div>
+      <div class="statement-line" data-scroll-highlight>
+        You just need a bin that <span class="highlight">holds it until you’re ready.</span>
+      </div>
+    </div>
+  </section>
+
+  <!-- SCENE 3: THE 4-STEP RITUAL -->
+  <section class="ritual-section">
+    <div class="reveal">
+      <div class="section-eyebrow">// How it works</div>
+      <h2 class="section-title">One flick of the wrist.</h2>
+    </div>
+
+    <div class="ritual-grid">
+      <!-- Step 1 -->
+      <div class="ritual-card reveal">
         <div>
-          <h4 class="pane-title">Floating Desktop Drop Bin</h4>
-          <p class="pane-desc">Minimalist, always-on-top translucent bin with realistic physics. Resides unobtrusively on your screen.</p>
+          <div class="ritual-card-num">01 / DROP</div>
+          <h3 class="ritual-card-title">Drag anything to the bin.</h3>
+          <p class="ritual-card-desc">Links from your browser, selected text, code snippets, or local files.</p>
+        </div>
+        <div class="ritual-visual">
+          <div class="drop-visual-chip">
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="var(--terracotta)" stroke-width="2.5">
+              <path d="M10 13a5 5 0 0 0 7.54.54l3-3a5 5 0 0 0-7.07-7.07l-1.72 1.71"></path>
+              <path d="M14 11a5 5 0 0 0-7.54-.54l-3 3a5 5 0 0 0 7.07 7.07l1.71-1.71"></path>
+            </svg>
+            <span>arxiv.org/abs/2403.05530</span>
+          </div>
         </div>
       </div>
 
-      <div class="visual-pane">
-        <div class="preview-canvas">
-          <img src="dashboard_light_preview.png" alt="Queue Dashboard Preview">
-        </div>
+      <!-- Step 2 -->
+      <div class="ritual-card reveal reveal-delay-1">
         <div>
-          <h4 class="pane-title">Queue Dashboard & Briefings</h4>
-          <p class="pane-desc">Click the bin to inspect pending reading slots, reschedule sessions, or open materials directly.</p>
+          <div class="ritual-card-num">02 / SCHEDULE</div>
+          <h3 class="ritual-card-title">Choose when you want it.</h3>
+          <p class="ritual-card-desc">Click “In 2 hours”, “Tomorrow 9am”, or let local NLP parse natural language automatically.</p>
+        </div>
+        <div class="ritual-visual">
+          <div class="time-visual-pills">
+            <span class="time-visual-pill">+2h</span>
+            <span class="time-visual-pill active">Tomorrow 9am</span>
+            <span class="time-visual-pill">Monday</span>
+          </div>
         </div>
       </div>
-    </section>
 
-    <!-- Downloads Manifest Table -->
-    <section class="manifest-section" id="downloads">
-      <div style="display:flex; justify-content:space-between; align-items:flex-end;">
+      <!-- Step 3 -->
+      <div class="ritual-card reveal">
         <div>
-          <h3 style="font-family:var(--font-display); font-size:22px; font-weight:700;">Release Artifacts v1.0.0</h3>
-          <p style="color:var(--ink-muted); font-size:13px; margin-top:2px;">Prebuilt self-extracting bundles and standalone packages.</p>
+          <div class="ritual-card-num">03 / SILENCE</div>
+          <h3 class="ritual-card-title">It vanishes completely.</h3>
+          <p class="ritual-card-desc">Zero clutter. Zero cognitive overload. Out of your sight until the exact moment you asked.</p>
         </div>
-        <span style="font-family:var(--font-mono); font-size:11px; color:var(--terracotta);">TARGET: LINUX & macOS</span>
+        <div class="ritual-visual">
+          <div class="vanish-visual-dot"></div>
+        </div>
       </div>
 
-      <table class="manifest-table">
-        <thead>
-          <tr>
-            <th>Format</th>
-            <th>Description</th>
-            <th>Compatibility</th>
-            <th>Action</th>
-          </tr>
-        </thead>
-        <tbody>
-          <tr>
-            <td class="table-target">One-Line Script</td>
-            <td class="table-detail">Zero-dependency automated download and systemd setup</td>
-            <td class="table-detail">Fedora • Ubuntu • Arch • Debian</td>
-            <td><a href="#copyBtn" onclick="copyInstall()" class="table-btn">Copy Command</a></td>
-          </tr>
-          <tr>
-            <td class="table-target">.run Installer</td>
-            <td class="table-detail">Self-extracting single-file binary installer (3.9 MB)</td>
-            <td class="table-detail">Linux x86_64</td>
-            <td><a href="https://github.com/s-chudmunge/forwardbin/releases/download/v1.0.0/forwardbin-installer.run" class="table-btn">Download .run</a></td>
-          </tr>
-          <tr>
-            <td class="table-target">Tarball (.tar.gz)</td>
-            <td class="table-detail">Standalone pre-compiled Rust engine & desktop assets</td>
-            <td class="table-detail">Linux x86_64</td>
-            <td><a href="https://github.com/s-chudmunge/forwardbin/releases/download/v1.0.0/forwardbin-v1.0.0-linux-x86_64.tar.gz" class="table-btn">Download Tarball</a></td>
-          </tr>
-          <tr>
-            <td class="table-target">Source & macOS</td>
-            <td class="table-detail">Full source tree for Cargo builds & launchd service</td>
-            <td class="table-detail">macOS Apple Silicon / Intel</td>
-            <td><a href="https://github.com/s-chudmunge/forwardbin" target="_blank" rel="noopener noreferrer" class="table-btn">View GitHub</a></td>
-          </tr>
-        </tbody>
-      </table>
-    </section>
-
-    <!-- Minimalist Ruled Footer -->
-    <footer>
-      <div>FORWARD BIN // OPEN SOURCE UNDER MIT LICENSE</div>
-      <div>
-        <a href="https://github.com/s-chudmunge/forwardbin" target="_blank" rel="noopener noreferrer">GITHUB REPOSITORY ↗</a>
+      <!-- Step 4 -->
+      <div class="ritual-card reveal reveal-delay-1">
+        <div>
+          <div class="ritual-card-num">04 / RETURN</div>
+          <h3 class="ritual-card-title">Arrives right on time.</h3>
+          <p class="ritual-card-desc">A native Linux desktop notification pops up with 1-click open or snooze actions.</p>
+        </div>
+        <div class="ritual-visual">
+          <div class="notif-visual-toast">
+            <div class="notif-title">ForwardBin • Return</div>
+            <div class="notif-subtitle">arxiv.org/abs/2403.05530 is ready.</div>
+          </div>
+        </div>
       </div>
-    </footer>
-  </div>
+    </div>
+  </section>
+
+  <!-- SCENE 4: THE HARDWARE NUMBERS -->
+  <section class="metrics-section">
+    <div class="metrics-header reveal">
+      <div class="section-eyebrow">// Specification Ledger</div>
+      <h2 class="section-title" style="margin-bottom: 12px;">Engineered for speed, not cloud subscriptions.</h2>
+      <p style="color: var(--text-muted); font-size: 1.15rem;">No background browser instances. No telemetry.</p>
+    </div>
+
+    <div class="metrics-grid">
+      <div class="metric-item reveal">
+        <div class="metric-val">7.8<span style="font-size: 2.2rem; color: var(--terracotta);">MB</span></div>
+        <div class="metric-label">Memory Footprint</div>
+        <div class="metric-sub">Zero Electron runtime</div>
+      </div>
+
+      <div class="metric-item reveal reveal-delay-1">
+        <div class="metric-val">4<span style="font-size: 2.2rem; color: var(--terracotta);">ms</span></div>
+        <div class="metric-label">Ingestion Latency</div>
+        <div class="metric-sub">Instant SQLite3 WAL append</div>
+      </div>
+
+      <div class="metric-item reveal reveal-delay-2">
+        <div class="metric-val">0.0<span style="font-size: 2.2rem; color: var(--terracotta);">%</span></div>
+        <div class="metric-label">Idle CPU</div>
+        <div class="metric-sub">Event-driven Unix sockets</div>
+      </div>
+
+      <div class="metric-item reveal reveal-delay-3">
+        <div class="metric-val">100<span style="font-size: 2.2rem; color: var(--terracotta);">%</span></div>
+        <div class="metric-label">Local & Private</div>
+        <div class="metric-sub">No logins. Stays on device.</div>
+      </div>
+    </div>
+  </section>
+
+  <!-- SCENE 5: ONE COMMAND INSTALL -->
+  <section class="install-section" id="install">
+    <div class="install-box reveal">
+      <div class="section-eyebrow">// Get started</div>
+      <h2>Install in 3 seconds.</h2>
+      <p>Self-contained executable for Ubuntu, Fedora, Debian, Arch, and Linux Mint.</p>
+
+      <div class="install-cli-card">
+        <span class="install-cli-text" id="installCmdText">curl -sSL https://raw.githubusercontent.com/s-chudmunge/forwardbin/main/install.sh | bash</span>
+        <button class="copy-btn" id="installCopyBtn" aria-label="Copy curl command">
+          <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5">
+            <rect x="9" y="9" width="13" height="13" rx="2" ry="2"></rect>
+            <path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"></path>
+          </svg>
+          <span>Copy</span>
+        </button>
+      </div>
+
+      <div class="install-btn-group">
+        <a href="https://github.com/s-chudmunge/forwardbin/releases/download/v1.0.0/forwardbin-installer.run" class="btn-download">
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2">
+            <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path>
+            <polyline points="7 10 12 15 17 10"></polyline>
+            <line x1="12" y1="15" x2="12" y2="3"></line>
+          </svg>
+          Download .run Installer
+        </a>
+        <a href="https://github.com/s-chudmunge/forwardbin" target="_blank" rel="noopener" class="btn-github">
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="currentColor">
+            <path d="M12 0C5.37 0 0 5.37 0 12c0 5.31 3.435 9.795 8.205 11.385.6.105.825-.255.825-.57 0-.285-.015-1.23-.015-2.235-3.015.555-3.795-.735-4.035-1.41-.135-.345-.72-1.41-1.23-1.695-.42-.225-1.02-.78-.015-.795.945-.015 1.62.87 1.845 1.23 1.08 1.815 2.805 1.305 3.495.99.105-.78.42-1.305.765-1.605-2.67-.3-5.46-1.335-5.46-5.925 0-1.305.465-2.385 1.23-3.225-.12-.3-.54-1.53.12-3.18 0 0 1.005-.315 3.3 1.23.96-.27 1.98-.405 3-.405s2.04.135 3 .405c2.295-1.56 3.3-1.23 3.3-1.23.66 1.65.24 2.88.12 3.18.765.84 1.23 1.905 1.23 3.225 0 4.605-2.805 5.625-5.475 5.925.435.375.81 1.095.81 2.22 0 1.605-.015 2.895-.015 3.3 0 .315.225.69.825.57A12.02 12.02 0 0024 12c0-6.63-5.37-12-12-12z"/>
+          </svg>
+          View Source (v1.0.0)
+        </a>
+      </div>
+    </div>
+  </section>
+
+  <!-- FOOTER -->
+  <footer>
+    <div>ForwardBin is free and open-source software under the MIT License.</div>
+    <div>Built in pure Rust & GTK by <a href="https://github.com/s-chudmunge" target="_blank" rel="noopener">Sankalp Chudmunge</a>.</div>
+  </footer>
 
   <script>
-    // Copy install command with reactive feedback
-    function copyInstall() {
-      const cmd = "curl -sSL https://raw.githubusercontent.com/s-chudmunge/forwardbin/main/install.sh | bash";
-      navigator.clipboard.writeText(cmd).then(() => {
-        const btn = document.getElementById("copyBtn");
-        btn.innerText = "COPIED!";
-        btn.style.background = "#D97757";
-        btn.style.color = "#FFFFFF";
-        setTimeout(() => {
-          btn.innerText = "COPY";
-          btn.style.background = "";
-          btn.style.color = "";
-        }, 2200);
+    // 1. Scroll-reveal on viewport enter using IntersectionObserver
+    const revealElements = document.querySelectorAll('.reveal');
+    const observer = new IntersectionObserver((entries) => {
+      entries.forEach(entry => {
+        if (entry.isIntersecting) {
+          entry.target.classList.add('active');
+        }
+      });
+    }, {
+      threshold: 0.15,
+      rootMargin: '0px 0px -50px 0px'
+    });
+
+    revealElements.forEach(el => observer.observe(el));
+
+    // 2. Scroll-driven illumination for Problem Statements
+    const highlightLines = document.querySelectorAll('[data-scroll-highlight]');
+    function checkHighlights() {
+      const triggerY = window.innerHeight * 0.72;
+      highlightLines.forEach(line => {
+        const rect = line.getBoundingClientRect();
+        if (rect.top <= triggerY && rect.bottom >= 0) {
+          line.classList.add('lit');
+        } else {
+          line.classList.remove('lit');
+        }
+      });
+    }
+    window.addEventListener('scroll', checkHighlights, { passive: true });
+    window.addEventListener('resize', checkHighlights, { passive: true });
+    checkHighlights();
+
+    // 3. Clipboard copy handlers
+    function setupCopy(btnId, text) {
+      const btn = document.getElementById(btnId);
+      if (!btn) return;
+      btn.addEventListener('click', (e) => {
+        e.stopPropagation();
+        navigator.clipboard.writeText(text).then(() => {
+          const original = btn.innerHTML;
+          btn.innerHTML = `
+            <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5">
+              <polyline points="20 6 9 17 4 12"></polyline>
+            </svg>
+            <span>Copied!</span>
+          `;
+          setTimeout(() => {
+            btn.innerHTML = original;
+          }, 2000);
+        });
       });
     }
 
-    // Interactive Drag & Drop Sandbox Simulation
-    let draggedData = null;
+    const commandStr = 'curl -sSL https://raw.githubusercontent.com/s-chudmunge/forwardbin/main/install.sh | bash';
+    setupCopy('heroCopyBtn', commandStr);
+    setupCopy('installCopyBtn', commandStr);
 
-    function handleDragStart(e, title, duration, kind) {
-      draggedData = { title, duration, kind, el: e.target };
-      e.dataTransfer.setData("text/plain", title);
-    }
-
-    function handleDragOver(e) {
-      e.preventDefault();
-      document.getElementById("binDropzone").classList.add("drag-over");
-      document.getElementById("binBubble").innerText = "DROP HERE!";
-    }
-
-    function handleDragLeave(e) {
-      document.getElementById("binDropzone").classList.remove("drag-over");
-      document.getElementById("binBubble").innerText = "FEED ME!";
-    }
-
-    function handleDrop(e) {
-      e.preventDefault();
-      const dropzone = document.getElementById("binDropzone");
-      const bubble = document.getElementById("binBubble");
-      const log = document.getElementById("simLog");
-
-      dropzone.classList.remove("drag-over");
-      bubble.innerText = "SLURP!";
-
-      if (draggedData && draggedData.el) {
-        draggedData.el.classList.add("dropped");
-      }
-
-      // Compute sample scheduled time (current time + 2 hours rounded to next 15 min)
-      const now = new Date();
-      now.setHours(now.getHours() + 2);
-      const timeStr = now.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
-
-      log.className = "sim-terminal-log success";
-      const itemTitle = draggedData ? draggedData.title : "Dropped item";
-      log.innerHTML = `✓ <strong>Scheduled:</strong> "${itemTitle}" at ${timeStr} • Calendar slot booked • Brief queued`;
-
-      setTimeout(() => {
-        bubble.innerText = "FED!";
-        setTimeout(() => { bubble.innerText = "FEED ME!"; }, 2000);
-      }, 700);
-    }
-
-    function handleBinClick() {
-      const log = document.getElementById("simLog");
-      log.className = "sim-terminal-log";
-      log.innerHTML = `[SIMULATOR] Drop any chip into the bin or run <code style="color:#D97757;">forwardbin add &lt;url&gt;</code> in your terminal.`;
-    }
+    document.getElementById('quickInstallPill')?.addEventListener('click', () => {
+      document.getElementById('heroCopyBtn')?.click();
+    });
   </script>
 </body>
 </html>
