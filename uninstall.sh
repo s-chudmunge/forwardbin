@@ -19,6 +19,7 @@ else
     systemctl --user disable forwardbin-ui.service forwardbin-daemon.service 2>/dev/null || true
     rm -f "$HOME/.config/systemd/user/forwardbin-ui.service"
     rm -f "$HOME/.config/systemd/user/forwardbin-daemon.service"
+    rm -f "$HOME/.config/autostart/forwardbin-ui.desktop"
     systemctl --user daemon-reload 2>/dev/null || true
 fi
 

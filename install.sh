@@ -123,6 +123,9 @@ else
     command -v update-desktop-database &>/dev/null && update-desktop-database "$APP_DIR" 2>/dev/null || true
     command -v gtk-update-icon-cache &>/dev/null && gtk-update-icon-cache -f -t "$HOME/.local/share/icons/hicolor" 2>/dev/null || true
 
+    # Clean up any legacy duplicate autostart desktop file to prevent double-launching
+    rm -f "$HOME/.config/autostart/forwardbin-ui.desktop"
+
     cp "$PROJECT_DIR/systemd/forwardbin-ui.service" "$SYSTEMD_DIR/"
     cp "$PROJECT_DIR/systemd/forwardbin-daemon.service" "$SYSTEMD_DIR/"
 

@@ -1049,7 +1049,32 @@ class AnimatedBinWindow(Gtk.Window):
         return True
 
 
+_single_instance_lock_file = None
+
+def acquire_single_instance_lock():
+    """Ensure only one instance of ForwardBin UI runs at any time via non-blocking advisory file lock."""
+    global _single_instance_lock_file
+    try:
+        import fcntl
+        lock_dir = os.path.expanduser("~/.config/forwardbin")
+        os.makedirs(lock_dir, exist_ok=True)
+        lock_path = os.path.join(lock_dir, "forwardbin_ui.lock")
+        _single_instance_lock_file = open(lock_path, "w")
+        fcntl.flock(_single_instance_lock_file, fcntl.LOCK_EX | fcntl.LOCK_NB)
+        _single_instance_lock_file.write(f"{os.getpid()}\n")
+        _single_instance_lock_file.flush()
+        return True
+    except (BlockingIOError, IOError):
+        print("[ForwardBin UI] Another instance is already active on this desktop. Exiting.")
+        sys.exit(0)
+    except Exception as e:
+        print(f"[ForwardBin UI] Lock warning: {e}")
+        return True
+
+
 def launch_animated_ui():
+    acquire_single_instance_lock()
+
     if not HAS_GTK3:
         try:
             from forwardbin.ui.macos_bin import launch_macos_ui
@@ -1066,3 +1091,4 @@ def launch_animated_ui():
 
 if __name__ == "__main__":
     launch_animated_ui()
+
