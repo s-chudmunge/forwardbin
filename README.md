@@ -27,6 +27,10 @@
   <img src="https://img.shields.io/badge/Calendar-GNOME_EDS_|_Google_|_Apple-purple?style=flat-square" alt="Calendar" />
 </p>
 
+<p align="center">
+  🌐 <strong>Official Website:</strong> <a href="https://s-chudmunge.github.io/forwardbin/"><strong>s-chudmunge.github.io/forwardbin</strong></a>
+</p>
+
 ---
 
 ## 🌟 What is ForwardBin?
